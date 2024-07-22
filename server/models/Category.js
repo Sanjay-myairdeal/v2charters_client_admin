@@ -1,8 +1,24 @@
 const mongoose = require('mongoose');
 const categorySchema=new mongoose.Schema({
-name:{
-    type:String,
-    required:'This file is required.'
-}
+    type:{
+        type:String,
+        required:true
+    },
+    passengers:{
+        type:String,
+        required:true
+    },
+    speed:{
+        type:String,
+        required:true
+    },
+    price:{
+        type:String,
+        required:true
+    },
+    description:{
+        type:String,
+        required:true
+    }
 });
 module.exports= mongoose.model('Category',categorySchema);

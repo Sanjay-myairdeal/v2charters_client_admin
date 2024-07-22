@@ -11,7 +11,7 @@ app.use(bodyparser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 const routes=require('./server/adminRoutes/adminRoutes');
 // Routes
-app.use("/", routes);
+app.use("/api/admin", routes);
 
 // Database connection
 dbConnect();
