@@ -20,10 +20,11 @@ const categorySchema=new mongoose.Schema({
         type:String,
         required:true
     },
-    // image:{
-    //     type:String,
-    //     required:true
-    // }
+    image:{
+        type:String,
+        default:'N/A',
+        required:'This file is required.'
+    },
 });
 
 module.exports= mongoose.model('Category',categorySchema);

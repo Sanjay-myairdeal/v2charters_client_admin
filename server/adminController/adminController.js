@@ -1,9 +1,8 @@
 const Category = require("../models/Category");
-const Booking=require("../models/Booking");
+const Booking = require("../models/Booking");
+
 /**
- * Category 
- * Section 
- * Starts
+ * Category Section Starts
  */
 
 /** Get All Categories */
@@ -23,11 +22,35 @@ exports.getAllCategories = async (req, res) => {
 exports.addCharterCategory = async (req, res) => {
   try {
     const { type, passengers, speed, price, description } = req.body;
+    let imageUploadFile;
+    let uploadPath;
+    let newImageName;
+
+    if (!req.files || Object.keys(req.files).length === 0) {
+      console.log("No files were uploaded.");
+    } else {
+      imageUploadFile = req.files.image;
+      newImageName = Date.now() + imageUploadFile.name;
+
+      uploadPath = require("path").resolve("./") + "/public/uploads/" + newImageName;
+
+      imageUploadFile.mv(uploadPath, function (err) {
+        if (err) return res.status(500).send(err);
+      });
+    }
+
     if (!type || !passengers || !speed || !price || !description) {
       return res.status(400).json({ message: "Missing fields" });
     }
 
-    const newCategory = new Category({ type, passengers, speed, price, description });
+    const newCategory = new Category({
+      type,
+      passengers,
+      speed,
+      price,
+      description,
+      image: newImageName,
+    });
     await newCategory.save();
 
     return res.status(200).json({ message: "Data inserted successfully" });
@@ -57,7 +80,7 @@ exports.getCharterById = async (req, res) => {
 exports.editCharterById = async (req, res) => {
   try {
     const id = req.params.id;
-    const { type, passengers, speed, price, description } = req.body;
+    const { type, passengers, speed, price, description, image } = req.body;
 
     if (!id || (!type && !passengers && !speed && !price && !description)) {
       return res.status(400).json({ message: "ID or fields to update are missing" });
@@ -65,7 +88,7 @@ exports.editCharterById = async (req, res) => {
 
     const updatedCategory = await Category.findByIdAndUpdate(
       id,
-      { type, passengers, speed, price, description },
+      { type, passengers, speed, price, description, image },
       { new: true }
     );
 
@@ -100,110 +123,115 @@ exports.deleteCharterById = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-/**Booking Section End */
+/**Category section Ends */
 
 /**Booking Section Starts */
 
-
 /** Get All Bookings */
 exports.getAllBookings = async (req, res) => {
-    try {
-      const data = await Booking.find({});
-      if (!data) {
-        return res.status(404).json({ message: "Error in fetching the Booking data" });
-      }
-      return res.status(200).json({ message: "Data fetched successfully", data });
-    } catch (error) {
-      return res.status(500).json({ message: "Server error" });
+  try {
+    const data = await Booking.find({});
+    if (!data) {
+      return res
+        .status(404)
+        .json({ message: "Error in fetching the Booking data" });
     }
-  };
-  
-  /** Add a Booking */
-  exports.addBooking = async (req, res) => {
-    try {
-      const { type, from, to, passengers, date, email, phone } = req.body;
-      if (!type || !passengers || !to || !from || !date || !email || !phone) {
-        return res.status(400).json({ message: "Missing fields" });
-      }
-  
-      const newBooking = new Booking({ 
-        type,
-        from,
-        to,
-        passengers,
-        date,
-        email,
-        phone
-      });
-      await newBooking.save();
-  
-      return res.status(200).json({ message: "Booking data inserted successfully" });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Server error" });
+    return res.status(200).json({ message: "Data fetched successfully", data });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/** Add a Booking */
+exports.addBooking = async (req, res) => {
+  try {
+    const { type, from, to, passengers, date, email, phone } = req.body;
+    if (!type || !passengers || !to || !from || !date || !email || !phone) {
+      return res.status(400).json({ message: "Missing fields" });
     }
-  };
-  
-  /** Get a Booking by ID */
-  exports.getBookingById = async (req, res) => {
-    try {
-      const id = req.params.id;
-      const booking = await Booking.findById(id);
-  
-      if (!booking) {
-        return res.status(404).json({ message: "Data not found" });
-      }
-      return res.status(200).json(booking);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Server error" });
+
+    const newBooking = new Booking({
+      type,
+      from,
+      to,
+      passengers,
+      date,
+      email,
+      phone,
+    });
+    await newBooking.save();
+
+    return res
+      .status(200)
+      .json({ message: "Booking data inserted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/** Get a Booking by ID */
+exports.getBookingById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const booking = await Booking.findById(id);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Data not found" });
     }
-  };
-  
-  /** Update a Booking by ID */
-  exports.editBookingById = async (req, res) => {
-    try {
-      const id = req.params.id;
-      const { type, from, to, passengers, date, email, phone } = req.body;
-  
-      if (!type || !passengers || !to || !from || !date || !email || !phone) {
-        return res.status(400).json({ message: "Fields to update are missing" });
-      }
-  
-      const updatedBooking = await Booking.findByIdAndUpdate(
-        id,
-        { type, from, to, passengers, date, email, phone },
-        { new: true }
-      );
-  
-      if (!updatedBooking) {
-        return res.status(404).json({ message: "Error in updating data" });
-      }
-      return res.status(200).json({ message: "Data updated successfully", updatedBooking });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Server error" });
+    return res.status(200).json(booking);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/** Update a Booking by ID */
+exports.editBookingById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { type, from, to, passengers, date, email, phone } = req.body;
+
+    if (!type || !passengers || !to || !from || !date || !email || !phone) {
+      return res.status(400).json({ message: "Fields to update are missing" });
     }
-  };
-  
-  /** Delete a Booking by ID */
-  exports.deleteBookingById = async (req, res) => {
-    try {
-      const id = req.params.id;
-  
-      if (!id) {
-        return res.status(400).json({ message: "ID is missing" });
-      }
-  
-      const booking = await Booking.findById(id);
-      if (!booking) {
-        return res.status(404).json({ message: "Data not found" });
-      }
-  
-      await Booking.findByIdAndDelete(id);
-      return res.status(200).json({ message: "Data deleted successfully" });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Server error" });
+
+    const updatedBooking = await Booking.findByIdAndUpdate(
+      id,
+      { type, from, to, passengers, date, email, phone },
+      { new: true }
+    );
+
+    if (!updatedBooking) {
+      return res.status(404).json({ message: "Error in updating data" });
     }
-  };
+    return res
+      .status(200)
+      .json({ message: "Data updated successfully", updatedBooking });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/** Delete a Booking by ID */
+exports.deleteBookingById = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    if (!id) {
+      return res.status(400).json({ message: "ID is missing" });
+    }
+
+    const booking = await Booking.findById(id);
+    if (!booking) {
+      return res.status(404).json({ message: "Data not found" });
+    }
+
+    await Booking.findByIdAndDelete(id);
+    return res.status(200).json({ message: "Data deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
