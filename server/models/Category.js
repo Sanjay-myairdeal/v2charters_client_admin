@@ -22,7 +22,6 @@ const categorySchema=new mongoose.Schema({
     },
     image:{
         type:String,
-        default:'N/A',
         required:'This file is required.'
     },
 });

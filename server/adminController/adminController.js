@@ -4,8 +4,17 @@ const Booking = require("../models/Booking");
 /**
  * Category Section Starts
  */
+exports.getPage = async (req, res) => {
+  res.render('sample',{ layout: false });
+};
+
+exports.getPagePost = async (req, res) => {
+  res.send("Uploaded Successfully");
+};
+
 
 /** Get All Categories */
+
 exports.getAllCategories = async (req, res) => {
   try {
     const data = await Category.find({});
@@ -21,35 +30,23 @@ exports.getAllCategories = async (req, res) => {
 /** Add a Category */
 exports.addCharterCategory = async (req, res) => {
   try {
-    const { type, passengers, speed, price, description } = req.body;
-    let imageUploadFile;
-    let uploadPath;
-    let newImageName;
+    const { type, passengers, speed, price, description} = req.body;
 
-    if (!req.files || Object.keys(req.files).length === 0) {
-      console.log("No files were uploaded.");
-    } else {
-      imageUploadFile = req.files.image;
-      newImageName = Date.now() + imageUploadFile.name;
-
-      uploadPath = require("path").resolve("./") + "/public/uploads/" + newImageName;
-
-      imageUploadFile.mv(uploadPath, function (err) {
-        if (err) return res.status(500).send(err);
-      });
-    }
-
-    if (!type || !passengers || !speed || !price || !description) {
+    if (!type || !passengers || !speed || !price || !description ) {
       return res.status(400).json({ message: "Missing fields" });
     }
+    const image = req.file ? req.file.path : null;
 
+    if (!image) {
+        return res.status(400).json({ message: 'Image file is required' });
+    }
     const newCategory = new Category({
       type,
       passengers,
       speed,
       price,
       description,
-      image: newImageName,
+      image,
     });
     await newCategory.save();
 
@@ -80,9 +77,9 @@ exports.getCharterById = async (req, res) => {
 exports.editCharterById = async (req, res) => {
   try {
     const id = req.params.id;
-    const { type, passengers, speed, price, description, image } = req.body;
-
-    if (!id || (!type && !passengers && !speed && !price && !description)) {
+    const { type, passengers, speed, price, description } = req.body;
+    const image = req.file ? req.file.path : req.body.image;
+    if (!id || (!type && !passengers && !speed && !price && !description && !image)) {
       return res.status(400).json({ message: "ID or fields to update are missing" });
     }
 
