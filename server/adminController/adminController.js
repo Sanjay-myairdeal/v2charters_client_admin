@@ -10,13 +10,6 @@ cloudinary.config({
 /**
  * Category Section Starts
  */
-exports.getPage = async (req, res) => {
-  res.render("sample", { layout: false });
-};
-
-exports.getPagePost = async (req, res) => {
-  res.send("Uploaded Successfully");
-};
 
 /** Get All Categories */
 
