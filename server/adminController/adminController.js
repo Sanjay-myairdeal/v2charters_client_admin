@@ -272,14 +272,11 @@ exports.filterDate = async (req, res) => {
       return res.status(400).json({ message: "From and To dates are required" });
     }
 
-    // Parse dates in YYYY-MM-DD format
     const fromDate = new Date(from);
     const toDate = new Date(to);
 
-    // Ensure toDate includes the entire day
     toDate.setHours(23, 59, 59, 999);
 
-    // Fetch all bookings
     const allBookings = await Booking.find();
 
     // Filter bookings within the date range
@@ -298,3 +295,4 @@ exports.filterDate = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+/** Booking Section Ends */

@@ -36,7 +36,7 @@ router.post('/upload', upload.single('file'), adminController.getPagePost);
 router.get('/getallcategories',adminController.getAllCategories);
 router.post('/addchartercategory',upload.single('image'),adminController.addCharterCategory);
 router.get('/getcharterbyid/:id',adminController.getCharterById);
-router.put("/editcharterbyid/:id", adminController.editCharterById);
+router.put("/editcharterbyid/:id",upload.single('image'), adminController.editCharterById);
 router.delete("/deletecharterbyid/:id",adminController.deleteCharterById);
 
 
