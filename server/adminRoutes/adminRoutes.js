@@ -44,5 +44,6 @@ router.delete("/deletecharterbyid/:id",adminController.deleteCharterById);
 /** Booking Section Routes Starts */
 router.get('/getallbookings',adminController.getAllBookings);
 router.post('/addbooking',adminController.addBooking);
-router.get('/sorted',adminController.filterDate)
+router.get('/sorted',adminController.filterDate);
+router.delete('/deletebookingbyid/:id',adminController.deleteBookingById);
 module.exports=router;
