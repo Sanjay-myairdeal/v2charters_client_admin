@@ -31,8 +31,8 @@ const upload = multer({
     
 });
 /** Category Section Routes Starts */
-router.get('/', adminController.getPage);
-router.post('/upload', upload.single('file'), adminController.getPagePost);  
+
+
 router.get('/getallcategories',adminController.getAllCategories);
 router.post('/addchartercategory',upload.single('image'),adminController.addCharterCategory);
 router.get('/getcharterbyid/:id',adminController.getCharterById);
