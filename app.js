@@ -19,7 +19,7 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // View Engine
-app.use(expressLayouts);
+// app.use(expressLayouts);
 // app.set('view engine', 'ejs');
 // app.set('views', './views');
 

@@ -32,7 +32,7 @@ const upload = multer({
 });
 /** Category Section Routes Starts */
 router.get('/', adminController.getPage);
-router.post('/upload', upload.single('file'), adminController.getPagePost);
+router.post('/upload', upload.single('file'), adminController.getPagePost);  
 router.get('/getallcategories',adminController.getAllCategories);
 router.post('/addchartercategory',upload.single('image'),adminController.addCharterCategory);
 router.get('/getcharterbyid/:id',adminController.getCharterById);
@@ -44,4 +44,5 @@ router.delete("/deletecharterbyid/:id",adminController.deleteCharterById);
 /** Booking Section Routes Starts */
 router.get('/getallbookings',adminController.getAllBookings);
 router.post('/addbooking',adminController.addBooking);
+router.get('/sorted',adminController.filterDate)
 module.exports=router;

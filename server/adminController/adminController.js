@@ -1,6 +1,6 @@
 const Category = require("../models/Category");
 const Booking = require("../models/Booking");
-const cloudinary = require('cloudinary').v2;
+const cloudinary = require("cloudinary").v2;
 // Cloudinary configuration
 cloudinary.config({
   cloud_name: "dybrajkta",
@@ -11,13 +11,12 @@ cloudinary.config({
  * Category Section Starts
  */
 exports.getPage = async (req, res) => {
-  res.render('sample',{ layout: false });
+  res.render("sample", { layout: false });
 };
 
 exports.getPagePost = async (req, res) => {
   res.send("Uploaded Successfully");
 };
-
 
 /** Get All Categories */
 
@@ -69,7 +68,6 @@ exports.addCharterCategory = async (req, res) => {
   }
 };
 
-
 /** Get a Category by ID */
 exports.getCharterById = async (req, res) => {
   try {
@@ -92,8 +90,13 @@ exports.editCharterById = async (req, res) => {
     const id = req.params.id;
     const { type, passengers, speed, price, description } = req.body;
 
-    if (!id || (!type && !passengers && !speed && !price && !description && !req.file)) {
-      return res.status(400).json({ message: "ID or fields to update are missing" });
+    if (
+      !id ||
+      (!type && !passengers && !speed && !price && !description && !req.file)
+    ) {
+      return res
+        .status(400)
+        .json({ message: "ID or fields to update are missing" });
     }
 
     let image;
@@ -115,7 +118,9 @@ exports.editCharterById = async (req, res) => {
     if (!updatedCategory) {
       return res.status(404).json({ message: "Error in updating data" });
     }
-    return res.status(200).json({ message: "Data updated successfully", updatedCategory });
+    return res
+      .status(200)
+      .json({ message: "Data updated successfully", updatedCategory });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
@@ -256,7 +261,40 @@ exports.deleteBookingById = async (req, res) => {
 };
 
 /**
- * Date Filter 
+ * Date Filter
  */
-exports
+exports.filterDate = async (req, res) => {
+  try {
+    const { from, to } = req.body;
 
+    // Check if the from and to dates are provided
+    if (!from || !to) {
+      return res.status(400).json({ message: "From and To dates are required" });
+    }
+
+    // Parse dates in YYYY-MM-DD format
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+
+    // Ensure toDate includes the entire day
+    toDate.setHours(23, 59, 59, 999);
+
+    // Fetch all bookings
+    const allBookings = await Booking.find();
+
+    // Filter bookings within the date range
+    const filteredData = allBookings.filter(item => {
+      const itemDate = new Date(item.date);
+      return itemDate >= fromDate && itemDate <= toDate;
+    });
+
+    // Send the filtered data in the response
+    res.status(200).json({
+      message: "Data fetched successfully",
+      data: filteredData
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
