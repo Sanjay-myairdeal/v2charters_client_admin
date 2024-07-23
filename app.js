@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 const dbConnect = require('./server/models/dbConnect');
 const port = 8000;
-const expressLayouts = require('express-ejs-layouts');
+// const expressLayouts = require('express-ejs-layouts');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const cors = require('cors');
@@ -20,8 +20,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // View Engine
 app.use(expressLayouts);
-app.set('view engine', 'ejs');
-app.set('views', './views');
+// app.set('view engine', 'ejs');
+// app.set('views', './views');
 
 // Routes
 const adminRoutes = require('./server/adminRoutes/adminRoutes');

@@ -1,6 +1,12 @@
 const Category = require("../models/Category");
 const Booking = require("../models/Booking");
-
+const cloudinary = require('cloudinary').v2;
+// Cloudinary configuration
+cloudinary.config({
+  cloud_name: "dybrajkta",
+  api_key: "921983243972892",
+  api_secret: "c4n72FykTGrxsKpDzpADvNsqf5U",
+});
 /**
  * Category Section Starts
  */
@@ -30,24 +36,30 @@ exports.getAllCategories = async (req, res) => {
 /** Add a Category */
 exports.addCharterCategory = async (req, res) => {
   try {
-    const { type, passengers, speed, price, description} = req.body;
+    const { type, passengers, speed, price, description } = req.body;
 
-    if (!type || !passengers || !speed || !price || !description ) {
+    if (!type || !passengers || !speed || !price || !description) {
       return res.status(400).json({ message: "Missing fields" });
     }
+
     const image = req.file ? req.file.path : null;
 
     if (!image) {
-        return res.status(400).json({ message: 'Image file is required' });
+      return res.status(400).json({ message: "Image file is required" });
     }
+
+    // Upload image to Cloudinary
+    const result = await cloudinary.uploader.upload(image);
+
     const newCategory = new Category({
       type,
       passengers,
       speed,
       price,
       description,
-      image,
+      image: result.secure_url,
     });
+
     await newCategory.save();
 
     return res.status(200).json({ message: "Data inserted successfully" });
@@ -56,6 +68,7 @@ exports.addCharterCategory = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
 
 /** Get a Category by ID */
 exports.getCharterById = async (req, res) => {
@@ -78,9 +91,19 @@ exports.editCharterById = async (req, res) => {
   try {
     const id = req.params.id;
     const { type, passengers, speed, price, description } = req.body;
-    const image = req.file ? req.file.path : req.body.image;
-    if (!id || (!type && !passengers && !speed && !price && !description && !image)) {
+
+    if (!id || (!type && !passengers && !speed && !price && !description && !req.file)) {
       return res.status(400).json({ message: "ID or fields to update are missing" });
+    }
+
+    let image;
+
+    if (req.file) {
+      // Upload the new image to Cloudinary
+      const result = await cloudinary.uploader.upload(req.file.path);
+      image = result.secure_url;
+    } else {
+      image = req.body.image;
     }
 
     const updatedCategory = await Category.findByIdAndUpdate(
@@ -98,7 +121,6 @@ exports.editCharterById = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-
 /** Delete a Category by ID */
 exports.deleteCharterById = async (req, res) => {
   try {
@@ -232,3 +254,9 @@ exports.deleteBookingById = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+/**
+ * Date Filter 
+ */
+exports
+
