@@ -18,6 +18,7 @@ const storage = new CloudinaryStorage({
       format: async (req, file) => {
         const supportedFormats = ['jpg', 'jpeg', 'png', 'gif'];
         const fileFormat = file.mimetype.split('/')[1];
+
         return supportedFormats.includes(fileFormat) ? fileFormat : 'jpg';
       },
       public_id: (req, file) => Date.now() + '-' + file.originalname,
@@ -44,6 +45,15 @@ router.delete("/deletecharterbyid/:id",adminController.deleteCharterById);
 /** Booking Section Routes Starts */
 router.get('/getallbookings',adminController.getAllBookings);
 router.post('/addbooking',adminController.addBooking);
-router.get('/sorted',adminController.filterDate);
+router.post('/sorted',adminController.filterDate);
 router.delete('/deletebookingbyid/:id',adminController.deleteBookingById);
 module.exports=router;
+
+
+
+/** Empty legs Section Starts */
+router.get('/getallemptylegs',adminController.getAllEmptyLegs);
+router.post('/addemptylegs',upload.single('image'),adminController.addEmptyLegs);
+router.get("/getemptylegsbyid/:id", adminController.getEmptyLegById);
+router.put('/editemptylegsbyid/:id',upload.single('image'),adminController.editEmptyLegsById);
+router.delete('/deleteemptylegsbyid/:id',adminController.deleteEmptyLegsById);

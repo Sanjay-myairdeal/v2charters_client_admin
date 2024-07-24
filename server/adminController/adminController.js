@@ -1,6 +1,7 @@
 const Category = require("../models/Category");
 const Booking = require("../models/Booking");
 const cloudinary = require("cloudinary").v2;
+const Emptylegs = require("../models/Emptylegs");
 // Cloudinary configuration
 cloudinary.config({
   cloud_name: "dybrajkta",
@@ -262,26 +263,22 @@ exports.filterDate = async (req, res) => {
 
     // Check if the from and to dates are provided
     if (!from || !to) {
-      return res.status(400).json({ message: "From and To dates are required" });
+      return res
+        .status(400)
+        .json({ message: "From and To dates are required" });
     }
-
-    const fromDate = new Date(from);
-    const toDate = new Date(to);
-
-    toDate.setHours(23, 59, 59, 999);
 
     const allBookings = await Booking.find();
 
     // Filter bookings within the date range
-    const filteredData = allBookings.filter(item => {
-      const itemDate = new Date(item.date);
-      return itemDate >= fromDate && itemDate <= toDate;
+    const filteredData = allBookings.filter((item) => {
+      return item.date >= from && item.date <= to;
     });
 
     // Send the filtered data in the response
     res.status(200).json({
       message: "Data fetched successfully",
-      data: filteredData
+      data: filteredData,
     });
   } catch (error) {
     console.error(error);
@@ -289,3 +286,139 @@ exports.filterDate = async (req, res) => {
   }
 };
 /** Booking Section Ends */
+/** Empty Legs Section Starts */
+exports.getAllEmptyLegs = async (req, res) => {
+  try {
+    const data = await Emptylegs.find({});
+    if (!data) {
+      return res.status(404).json({ message: "Error in fetching the data" });
+    }
+    return res.status(200).json({ message: "Data fetched successfully", data: data });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/** Adding the Empty Legs */
+exports.addEmptyLegs = async (req, res) => {
+  try {
+    const { from, to, type, date, passengers, description, price } = req.body;
+
+    if (!type || !passengers || !to || !from || !date || !description || !price) {
+      return res.status(400).json({ message: "Missing fields" });
+    }
+    const image = req.file ? req.file.path : null;
+
+    if (!image) {
+      return res.status(400).json({ message: "Image file is required" });
+    }
+
+    // Upload image to Cloudinary
+    const result = await cloudinary.uploader.upload(image);
+
+    const newEmptyLeg = new Emptylegs({
+      type,
+      from,
+      to,
+      date,
+      passengers,
+      description,
+      price,
+      image: result.secure_url,
+    });
+
+    await newEmptyLeg.save();
+    return res.status(200).json({ message: "Data inserted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/** Get the Empty Legs by Id */
+exports.getEmptyLegById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!id) {
+      return res.status(400).json({ message: "Id is missing" });
+    }
+    const data = await Emptylegs.findById(id);
+    if (!data) {
+      return res.status(404).json({ message: "Data not found for the given ID" });
+    }
+    return res.status(200).json({ data: data });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/** Update Empty legs by ID */
+exports.editEmptyLegsById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!id) {
+      return res.status(404).json({ message: "Id is missing" });
+    }
+    const { from, to, type, date, passengers, description, price } = req.body;
+    if (!type || !passengers || !to || !from || !date || !description || !price) {
+      return res.status(400).json({ message: "Missing fields" });
+    }
+
+    let image;
+
+    if (req.file) {
+      // Upload the new image to Cloudinary
+      const result = await cloudinary.uploader.upload(req.file.path);
+      image = result.secure_url;
+    } else {
+      image = req.body.image;
+    }
+
+    const updatedData = await Emptylegs.findByIdAndUpdate(
+      id,
+      {
+        from,
+        to,
+        type,
+        date,
+        passengers,
+        description,
+        price,
+        image: image,
+      },
+      { new: true }
+    );
+
+    if (!updatedData) {
+      return res.status(400).json({ message: "Error in updating the data" });
+    }
+
+    return res.status(200).json({ message: "Data updated successfully", updated: updatedData });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/** Delete Empty Legs By Id */
+exports.deleteEmptyLegsById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!id) {
+      return res.status(404).json({ message: "Id is missing" });
+    }
+
+    const data = await Emptylegs.findById(id);
+    if (!data) {
+      return res.status(404).json({ message: "Data not found for the given ID" });
+    }
+
+    await Emptylegs.findByIdAndDelete(id);
+    return res.status(200).json({ message: "Data deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
