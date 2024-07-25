@@ -26,7 +26,8 @@ const categorySchema=new mongoose.Schema({
     },
     availability: {
         type: String,
-        required: true
+        required: true,
+        default:"no"
     }
 });
 

@@ -305,7 +305,7 @@ exports.getAllEmptyLegs = async (req, res) => {
 /** Adding the Empty Legs */
 exports.addEmptyLegs = async (req, res) => {
   try {
-    const { from, to, type, date, passengers, description, price } = req.body;
+    const { from, to, type, date, passengers, description, price,availability } = req.body;
 
     if (!type || !passengers || !to || !from || !date || !description || !price || !availability) {
       return res.status(400).json({ message: "Missing fields" });

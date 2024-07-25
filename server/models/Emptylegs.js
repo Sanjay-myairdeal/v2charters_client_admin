@@ -34,7 +34,8 @@ const EmptySchema = mongoose.Schema({
 },
 availability: {
   type: String,
-  required: true
+  required: true,
+  default:"no"
 }
 });
 module.exports = mongoose.model("Emptyleg", EmptySchema);
