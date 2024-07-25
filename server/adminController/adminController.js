@@ -428,7 +428,7 @@ exports.deleteEmptyLegsById = async (req, res) => {
 };
 
 
-/**Empty Legs Boookings  starts*/
+/**Empty Legs Boookings  starts here*/
 exports.getAllEmptyBookings = async (req, res) => {
   try {
     const data = await Emptylegbooking.find({});
