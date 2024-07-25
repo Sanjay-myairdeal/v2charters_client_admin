@@ -24,6 +24,10 @@ const categorySchema=new mongoose.Schema({
         type:String,
         required:'This file is required.'
     },
+    availability: {
+        type: String,
+        required: true
+    }
 });
 
 module.exports= mongoose.model('Category',categorySchema);

@@ -47,7 +47,7 @@ router.get('/getallbookings',adminController.getAllBookings);
 router.post('/addbooking',adminController.addBooking);
 router.post('/sorted',adminController.filterDate);
 router.delete('/deletebookingbyid/:id',adminController.deleteBookingById);
-module.exports=router;
+
 
 
 
@@ -57,3 +57,18 @@ router.post('/addemptylegs',upload.single('image'),adminController.addEmptyLegs)
 router.get("/getemptylegsbyid/:id", adminController.getEmptyLegById);
 router.put('/editemptylegsbyid/:id',upload.single('image'),adminController.editEmptyLegsById);
 router.delete('/deleteemptylegsbyid/:id',adminController.deleteEmptyLegsById);
+
+
+/** Empty Leg Booking Routes */
+
+
+router.get('/getallemptylegbookings',adminController.getAllEmptyBookings);
+router.post('/addemptylegbooking',adminController.addEmptyLegBooking);
+router.get("/getemptylegbookingbyid/:id", adminController.getEmptylegBookingById);
+router.post('/filteremptylegbooking',adminController.filterEmptyLegDate);
+router.delete('/deleteemptylegbookingbyid/:id',adminController.deleteEmptyLegBookingById);
+
+
+
+
+module.exports=router;

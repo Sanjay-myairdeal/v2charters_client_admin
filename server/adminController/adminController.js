@@ -2,6 +2,7 @@ const Category = require("../models/Category");
 const Booking = require("../models/Booking");
 const cloudinary = require("cloudinary").v2;
 const Emptylegs = require("../models/Emptylegs");
+const Emptylegbooking=require('../models/EmptylegsBooking')
 // Cloudinary configuration
 cloudinary.config({
   cloud_name: "dybrajkta",
@@ -29,9 +30,9 @@ exports.getAllCategories = async (req, res) => {
 /** Add a Category */
 exports.addCharterCategory = async (req, res) => {
   try {
-    const { type, passengers, speed, price, description } = req.body;
+    const { type, passengers, speed, price, description,availability } = req.body;
 
-    if (!type || !passengers || !speed || !price || !description) {
+    if (!type || !passengers || !speed || !price || !description || !availability) {
       return res.status(400).json({ message: "Missing fields" });
     }
 
@@ -51,6 +52,7 @@ exports.addCharterCategory = async (req, res) => {
       price,
       description,
       image: result.secure_url,
+      availability
     });
 
     await newCategory.save();
@@ -82,11 +84,11 @@ exports.getCharterById = async (req, res) => {
 exports.editCharterById = async (req, res) => {
   try {
     const id = req.params.id;
-    const { type, passengers, speed, price, description } = req.body;
+    const { type, passengers, speed, price, description , availability } = req.body;
 
     if (
       !id ||
-      (!type && !passengers && !speed && !price && !description && !req.file)
+      (!type && !passengers && !speed && !price && !description && !req.file && !availability)
     ) {
       return res
         .status(400)
@@ -105,7 +107,7 @@ exports.editCharterById = async (req, res) => {
 
     const updatedCategory = await Category.findByIdAndUpdate(
       id,
-      { type, passengers, speed, price, description, image },
+      { type, passengers, speed, price, description, image,availability },
       { new: true }
     );
 
@@ -305,7 +307,7 @@ exports.addEmptyLegs = async (req, res) => {
   try {
     const { from, to, type, date, passengers, description, price } = req.body;
 
-    if (!type || !passengers || !to || !from || !date || !description || !price) {
+    if (!type || !passengers || !to || !from || !date || !description || !price || !availability) {
       return res.status(400).json({ message: "Missing fields" });
     }
     const image = req.file ? req.file.path : null;
@@ -326,6 +328,7 @@ exports.addEmptyLegs = async (req, res) => {
       description,
       price,
       image: result.secure_url,
+      availability
     });
 
     await newEmptyLeg.save();
@@ -361,8 +364,8 @@ exports.editEmptyLegsById = async (req, res) => {
     if (!id) {
       return res.status(404).json({ message: "Id is missing" });
     }
-    const { from, to, type, date, passengers, description, price } = req.body;
-    if (!type || !passengers || !to || !from || !date || !description || !price) {
+    const { from, to, type, date, passengers, description, price , availability} = req.body;
+    if (!type || !passengers || !to || !from || !date || !description || !price || !availability) {
       return res.status(400).json({ message: "Missing fields" });
     }
 
@@ -387,6 +390,7 @@ exports.editEmptyLegsById = async (req, res) => {
         description,
         price,
         image: image,
+        availability
       },
       { new: true }
     );
@@ -420,5 +424,152 @@ exports.deleteEmptyLegsById = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+/**Empty Legs Boookings  starts*/
+exports.getAllEmptyBookings = async (req, res) => {
+  try {
+    const data = await Emptylegbooking.find({});
+    if (!data) {
+      return res
+        .status(404)
+        .json({ message: "Error in fetching the Booking data" });
+    }
+    return res.status(200).json({ message: "Data fetched successfully", data });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+/** Add a Empty Leg Booking */
+exports.addEmptyLegBooking = async (req, res) => {
+  try {
+    const { type, from, to, passengers, date, email, phone } = req.body;
+    if (!type || !passengers || !to || !from || !date || !email || !phone) {
+      return res.status(400).json({ message: "Missing fields" });
+    }
+
+    const newBooking = new Emptylegbooking({
+      type,
+      from,
+      to,
+      passengers,
+      date,
+      email,
+      phone,
+    });
+    await newBooking.save();
+
+    return res
+      .status(200)
+      .json({ message: "Booking data inserted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
+
+/** Get a Empty Leg Booking by ID */
+exports.getEmptylegBookingById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const booking = await Emptylegbooking.findById(id);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Data not found" });
+    }
+    return res.status(200).json(booking);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+/** Update a Booking by ID */
+exports.editEmptyLegBookingById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { type, from, to, passengers, date, email, phone } = req.body;
+
+    if (!type || !passengers || !to || !from || !date || !email || !phone) {
+      return res.status(400).json({ message: "Fields to update are missing" });
+    }
+
+    const updatedBooking = await Emptylegbooking.findByIdAndUpdate(
+      id,
+      { type, from, to, passengers, date, email, phone },
+      { new: true }
+    );
+
+    if (!updatedBooking) {
+      return res.status(404).json({ message: "Error in updating data" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Data updated successfully", updatedBooking });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/** Delete a Booking by ID */
+exports.deleteEmptyLegBookingById = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    if (!id) {
+      return res.status(400).json({ message: "ID is missing" });
+    }
+
+    const booking = await Emptylegbooking.findById(id);
+    if (!booking) {
+      return res.status(404).json({ message: "Data not found" });
+    }
+
+    await Emptylegbooking.findByIdAndDelete(id);
+    return res.status(200).json({ message: "Data deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/**
+ * Date Filter
+ */
+exports.filterEmptyLegDate = async (req, res) => {
+  try {
+    const { from, to } = req.body;
+
+    // Check if the from and to dates are provided
+    if (!from || !to) {
+      return res
+        .status(400)
+        .json({ message: "From and To dates are required" });
+    }
+
+    const allBookings = await Emptylegbooking.find();
+
+    // Filter bookings within the date range
+    const filteredData = allBookings.filter((item) => {
+      return item.date >= from && item.date <= to;
+    });
+
+    // Send the filtered data in the response
+    res.status(200).json({
+      message: "Data fetched successfully",
+      data: filteredData,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };
