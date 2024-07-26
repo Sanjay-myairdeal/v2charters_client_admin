@@ -4,6 +4,7 @@ const multer  = require('multer')
 const adminController=require('../adminController/adminController');
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("cloudinary").v2;
+const loginController=require('../adminController/loginController')
 // Cloudinary configuration
 cloudinary.config({
     cloud_name: "dybrajkta",
@@ -68,7 +69,10 @@ router.get("/getemptylegbookingbyid/:id", adminController.getEmptylegBookingById
 router.post('/filteremptylegbooking',adminController.filterEmptyLegDate);
 router.delete('/deleteemptylegbookingbyid/:id',adminController.deleteEmptyLegBookingById);
 
-
+/**Register and Login Routes */
+router.post('/register',loginController.register);
+router.post('/login',loginController.login);
+router.delete('/deleteadmin/:id',loginController.deleteAdmin);
 
 
 module.exports=router;
