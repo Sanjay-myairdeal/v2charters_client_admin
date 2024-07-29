@@ -75,4 +75,8 @@ router.post('/login',loginController.login);
 router.delete('/deleteadmin/:id',loginController.deleteAdmin);
 
 
+/** Feedback Section */
+router.post('/addfeedback',adminController.addFeedback);
+router.get('/getallfeedback',adminController.getAllFeedbacks)
+router.delete('/deletefeedbackbyid/:id',adminController.deleteFeedbackById)
 module.exports=router;

@@ -2,13 +2,16 @@ const Category = require("../models/Category");
 const Booking = require("../models/Booking");
 const cloudinary = require("cloudinary").v2;
 const Emptylegs = require("../models/Emptylegs");
-const Emptylegbooking=require('../models/EmptylegsBooking')
+const Emptylegbooking = require("../models/EmptylegsBooking");
+const email_verifier = require("email-verifier-node");
+const FeedBack =require('../models/Feedback')
 // Cloudinary configuration
 cloudinary.config({
   cloud_name: "dybrajkta",
   api_key: "921983243972892",
   api_secret: "c4n72FykTGrxsKpDzpADvNsqf5U",
 });
+
 /**
  * Category Section Starts
  */
@@ -30,9 +33,17 @@ exports.getAllCategories = async (req, res) => {
 /** Add a Category */
 exports.addCharterCategory = async (req, res) => {
   try {
-    const { type, passengers, speed, price, description,availability } = req.body;
+    const { type, passengers, speed, price, description, availability } =
+      req.body;
 
-    if (!type || !passengers || !speed || !price || !description || !availability) {
+    if (
+      !type ||
+      !passengers ||
+      !speed ||
+      !price ||
+      !description ||
+      !availability
+    ) {
       return res.status(400).json({ message: "Missing fields" });
     }
 
@@ -52,7 +63,7 @@ exports.addCharterCategory = async (req, res) => {
       price,
       description,
       image: result.secure_url,
-      availability
+      availability,
     });
 
     await newCategory.save();
@@ -84,11 +95,18 @@ exports.getCharterById = async (req, res) => {
 exports.editCharterById = async (req, res) => {
   try {
     const id = req.params.id;
-    const { type, passengers, speed, price, description , availability } = req.body;
+    const { type, passengers, speed, price, description, availability } =
+      req.body;
 
     if (
       !id ||
-      (!type && !passengers && !speed && !price && !description && !req.file && !availability)
+      (!type &&
+        !passengers &&
+        !speed &&
+        !price &&
+        !description &&
+        !req.file &&
+        !availability)
     ) {
       return res
         .status(400)
@@ -107,7 +125,7 @@ exports.editCharterById = async (req, res) => {
 
     const updatedCategory = await Category.findByIdAndUpdate(
       id,
-      { type, passengers, speed, price, description, image,availability },
+      { type, passengers, speed, price, description, image, availability },
       { new: true }
     );
 
@@ -162,14 +180,24 @@ exports.getAllBookings = async (req, res) => {
   }
 };
 
-/** Add a Booking */
+/**Add booking */
 exports.addBooking = async (req, res) => {
   try {
     const { type, from, to, passengers, date, email, phone } = req.body;
+
+    // Check for missing fields
     if (!type || !passengers || !to || !from || !date || !email || !phone) {
       return res.status(400).json({ message: "Missing fields" });
     }
 
+    const verificationResult = await email_verifier.verify_email(email);
+    if (!verificationResult.is_verified) {
+      return res.status(400).json({
+        message: "The email account that you tried to reach does not exist.",
+      });
+    }
+
+    // Create a new booking
     const newBooking = new Booking({
       type,
       from,
@@ -179,16 +207,17 @@ exports.addBooking = async (req, res) => {
       email,
       phone,
     });
+
+    // Save the booking
     await newBooking.save();
 
-    return res
-      .status(200)
-      .json({ message: "Booking data inserted successfully" });
+    return res.status(200).json({ message: "Booking data inserted successfully" });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error" });
+    console.error("Error:", error.message);
+    return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 
 /** Get a Booking by ID */
 exports.getBookingById = async (req, res) => {
@@ -295,7 +324,9 @@ exports.getAllEmptyLegs = async (req, res) => {
     if (!data) {
       return res.status(404).json({ message: "Error in fetching the data" });
     }
-    return res.status(200).json({ message: "Data fetched successfully", data: data });
+    return res
+      .status(200)
+      .json({ message: "Data fetched successfully", data: data });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
@@ -305,9 +336,27 @@ exports.getAllEmptyLegs = async (req, res) => {
 /** Adding the Empty Legs */
 exports.addEmptyLegs = async (req, res) => {
   try {
-    const { from, to, type, date, passengers, description, price,availability } = req.body;
+    const {
+      from,
+      to,
+      type,
+      date,
+      passengers,
+      description,
+      price,
+      availability,
+    } = req.body;
 
-    if (!type || !passengers || !to || !from || !date || !description || !price || !availability) {
+    if (
+      !type ||
+      !passengers ||
+      !to ||
+      !from ||
+      !date ||
+      !description ||
+      !price ||
+      !availability
+    ) {
       return res.status(400).json({ message: "Missing fields" });
     }
     const image = req.file ? req.file.path : null;
@@ -328,7 +377,7 @@ exports.addEmptyLegs = async (req, res) => {
       description,
       price,
       image: result.secure_url,
-      availability
+      availability,
     });
 
     await newEmptyLeg.save();
@@ -348,7 +397,9 @@ exports.getEmptyLegById = async (req, res) => {
     }
     const data = await Emptylegs.findById(id);
     if (!data) {
-      return res.status(404).json({ message: "Data not found for the given ID" });
+      return res
+        .status(404)
+        .json({ message: "Data not found for the given ID" });
     }
     return res.status(200).json({ data: data });
   } catch (error) {
@@ -364,8 +415,26 @@ exports.editEmptyLegsById = async (req, res) => {
     if (!id) {
       return res.status(404).json({ message: "Id is missing" });
     }
-    const { from, to, type, date, passengers, description, price , availability} = req.body;
-    if (!type || !passengers || !to || !from || !date || !description || !price || !availability) {
+    const {
+      from,
+      to,
+      type,
+      date,
+      passengers,
+      description,
+      price,
+      availability,
+    } = req.body;
+    if (
+      !type ||
+      !passengers ||
+      !to ||
+      !from ||
+      !date ||
+      !description ||
+      !price ||
+      !availability
+    ) {
       return res.status(400).json({ message: "Missing fields" });
     }
 
@@ -390,7 +459,7 @@ exports.editEmptyLegsById = async (req, res) => {
         description,
         price,
         image: image,
-        availability
+        availability,
       },
       { new: true }
     );
@@ -399,7 +468,9 @@ exports.editEmptyLegsById = async (req, res) => {
       return res.status(400).json({ message: "Error in updating the data" });
     }
 
-    return res.status(200).json({ message: "Data updated successfully", updated: updatedData });
+    return res
+      .status(200)
+      .json({ message: "Data updated successfully", updated: updatedData });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
@@ -416,7 +487,9 @@ exports.deleteEmptyLegsById = async (req, res) => {
 
     const data = await Emptylegs.findById(id);
     if (!data) {
-      return res.status(404).json({ message: "Data not found for the given ID" });
+      return res
+        .status(404)
+        .json({ message: "Data not found for the given ID" });
     }
 
     await Emptylegs.findByIdAndDelete(id);
@@ -426,7 +499,6 @@ exports.deleteEmptyLegsById = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-
 
 /**Empty Legs Boookings  starts here*/
 exports.getAllEmptyBookings = async (req, res) => {
@@ -442,7 +514,6 @@ exports.getAllEmptyBookings = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-
 
 /** Add a Empty Leg Booking */
 exports.addEmptyLegBooking = async (req, res) => {
@@ -472,9 +543,6 @@ exports.addEmptyLegBooking = async (req, res) => {
   }
 };
 
-
-
-
 /** Get a Empty Leg Booking by ID */
 exports.getEmptylegBookingById = async (req, res) => {
   try {
@@ -490,7 +558,6 @@ exports.getEmptylegBookingById = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-
 
 /** Update a Booking by ID */
 exports.editEmptyLegBookingById = async (req, res) => {
@@ -571,5 +638,88 @@ exports.filterEmptyLegDate = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+/*
+FeedBack Section Starts
+*/
+exports.addFeedback = async (req, res) => {
+  try {
+    const { name, service, email, feedback } = req.body;
+
+    // Check for missing fields
+    if (!name || !service || !email || !feedback) {
+      return res.status(400).json({ message: "Missing fields" });
+    }
+    const verificationResult = await email_verifier.verify_email(email);
+    if (!verificationResult.is_verified) {
+      return res.status(400).json({
+        message: "The email account that you tried to reach does not exist.",
+      });
+    }
+    // Create a new feedback entry
+    const newFeedback = new FeedBack({
+      name,
+      service,
+      email,
+      feedback
+    });
+
+    // Save the feedback
+    await newFeedback.save();
+
+    // Send success response
+    return res.status(201).json({ message: "Message inserted successfully" });
+  } catch (error) {
+    console.error("Error:", error.message);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  } 
+};
+
+//**Get All Feedbacks */
+exports.getAllFeedbacks = async (req, res) => {
+  try {
+    // Fetch all feedback from the database
+    const allFeedback = await FeedBack.find({});
+
+    // Check if feedback data exists
+    if (!allFeedback) {
+      return res.status(404).json({ message: "Error in fetching the data" });
+    }
+
+    // Send success response with fetched feedback data
+    return res.status(200).json({
+      message: "Feedback fetched successfully",
+      feedback: allFeedback
+    });
+  } catch (error) {
+    console.error("Error:", error.message);
+    // Handle any errors that occur during the process
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
+
+/**Delet the Feedback */
+
+exports.deleteFeedbackById = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    if (!id) {
+      return res.status(400).json({ message: "ID is missing" });
+    }
+
+    const feedback = await FeedBack.findById(id);
+    if (!feedback) {
+      return res.status(404).json({ message: "No Feedback with Id" });
+    }
+    await FeedBack.findByIdAndDelete(id);
+    return res.status(200).json({ message: "Feedback deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
