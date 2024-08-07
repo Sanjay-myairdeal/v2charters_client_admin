@@ -5,6 +5,8 @@ const adminController=require('../adminController/adminController');
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("cloudinary").v2;
 const loginController=require('../adminController/loginController')
+const modifyController=require('../adminController/categorymodifyController')
+
 // Cloudinary configuration
 cloudinary.config({
     cloud_name: "dybrajkta",
@@ -80,3 +82,29 @@ router.post('/addfeedback',adminController.addFeedback);
 router.get('/getallfeedback',adminController.getAllFeedbacks)
 router.delete('/deletefeedbackbyid/:id',adminController.deleteFeedbackById)
 module.exports=router;
+
+/**Search Route */
+router.post('/search',adminController.Search);
+
+
+/**Sub Categories */
+router.get('/categories',adminController.explorecategories);
+router.get('/categories/:id',adminController.exploreCategoriesById);
+
+/**
+ * Routes of Modify Schema
+ */
+router.get('/modifycategory',modifyController.getModifyCategories);
+router.post('/addmodifycategory',upload.single('image'),modifyController.addModifyCategories)
+
+/**
+ * Sub Categories Routes
+ */
+
+router.get('/getallsubcategories',modifyController.getSubCategories);
+router.post('/addsubcategory',upload.single('image'),modifyController.addSubCategories);
+
+/**
+ * Filter Category Data
+ */
+router.get('/filter/:chartertype',modifyController.getsubCategorybyType)

@@ -30,5 +30,5 @@ const categorySchema=new mongoose.Schema({
         default:"no"
     }
 });
-
+categorySchema.index({"$**":"text"})
 module.exports= mongoose.model('Category',categorySchema);

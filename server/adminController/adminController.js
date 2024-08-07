@@ -723,3 +723,57 @@ exports.deleteFeedbackById = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+/** Search Api */
+exports.Search=async(req,res)=>{
+  try {
+    const search=req.body.searchTerm;
+    if(!search){
+      return res.status(404).json({message:"Missing the Fields"})
+    }
+    // const data=await Category.find({
+    //   $text:{$search:search , $diacriticSensitive:true},
+    // });
+    const data = await Category.find({
+      $or: [
+        { type: { $regex: search, $options: 'i' } },
+        { speed: { $regex: search, $options: 'i' } },
+        { price: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { availability: { $regex: search, $options: 'i' } },
+        { passengers: { $regex: search, $options: 'i' } },
+      ]
+    });
+    if(!data){
+      return res.status(400).json({message:"No Data Found"})
+    }
+    return res.status(200).json({message:"Searched Successfully",result:data})
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json(error)
+  }
+}
+
+//sub category
+exports.explorecategories = async (req, res) => {
+  try {
+    const limitNumber = 6;
+    const categories = await Category.find({}).limit(limitNumber);
+    res.status(200).json({message:"Data fetched",categories:categories})
+  } catch (error) {
+    res.status(500).send({ message: error.message } || "Error Ocurred");
+  }
+};
+
+/**
+ * GET /categories/:id
+ * Categories By Id
+ */
+exports.exploreCategoriesById = async (req, res) => {
+  try {
+    let categoryId = req.params.id;
+    const categoryById = await Category.find({ type: categoryId });
+    res.status(200).json({message:"Data after filtered",categoryId:categoryId,data:categoryById})
+  } catch (error) {
+    res.status(500).send({ message: error.message || "Error Occured" });
+  }
+};
