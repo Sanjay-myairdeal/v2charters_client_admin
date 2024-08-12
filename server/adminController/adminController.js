@@ -4,7 +4,8 @@ const cloudinary = require("cloudinary").v2;
 const Emptylegs = require("../models/Emptylegs");
 const Emptylegbooking = require("../models/EmptylegsBooking");
 const email_verifier = require("email-verifier-node");
-const FeedBack =require('../models/Feedback')
+const FeedBack = require("../models/Feedback");
+const Type = require("../models/Type");
 // Cloudinary configuration
 cloudinary.config({
   cloud_name: "dybrajkta",
@@ -144,11 +145,9 @@ exports.editCharterById = async (req, res) => {
 exports.deleteCharterById = async (req, res) => {
   try {
     const id = req.params.id;
-
     if (!id) {
       return res.status(400).json({ message: "ID is missing" });
     }
-
     const category = await Category.findById(id);
     if (!category) {
       return res.status(404).json({ message: "Data not found" });
@@ -211,13 +210,16 @@ exports.addBooking = async (req, res) => {
     // Save the booking
     await newBooking.save();
 
-    return res.status(200).json({ message: "Booking data inserted successfully" });
+    return res
+      .status(200)
+      .json({ message: "Booking data inserted successfully" });
   } catch (error) {
     console.error("Error:", error.message);
-    return res.status(500).json({ message: "Server error", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 };
-
 
 /** Get a Booking by ID */
 exports.getBookingById = async (req, res) => {
@@ -663,7 +665,7 @@ exports.addFeedback = async (req, res) => {
       name,
       service,
       email,
-      feedback
+      feedback,
     });
 
     // Save the feedback
@@ -673,8 +675,10 @@ exports.addFeedback = async (req, res) => {
     return res.status(201).json({ message: "Message inserted successfully" });
   } catch (error) {
     console.error("Error:", error.message);
-    return res.status(500).json({ message: "Server error", error: error.message });
-  } 
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
 };
 
 //**Get All Feedbacks */
@@ -691,16 +695,16 @@ exports.getAllFeedbacks = async (req, res) => {
     // Send success response with fetched feedback data
     return res.status(200).json({
       message: "Feedback fetched successfully",
-      feedback: allFeedback
+      feedback: allFeedback,
     });
   } catch (error) {
     console.error("Error:", error.message);
     // Handle any errors that occur during the process
-    return res.status(500).json({ message: "Server error", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 };
-
-
 
 /**Delet the Feedback */
 
@@ -724,41 +728,45 @@ exports.deleteFeedbackById = async (req, res) => {
   }
 };
 /** Search Api */
-exports.Search=async(req,res)=>{
+exports.Search = async (req, res) => {
   try {
-    const search=req.body.searchTerm;
-    if(!search){
-      return res.status(404).json({message:"Missing the Fields"})
+    const search = req.body.searchTerm;
+    if (!search) {
+      return res.status(404).json({ message: "Missing the Fields" });
     }
     // const data=await Category.find({
     //   $text:{$search:search , $diacriticSensitive:true},
     // });
     const data = await Category.find({
       $or: [
-        { type: { $regex: search, $options: 'i' } },
-        { speed: { $regex: search, $options: 'i' } },
-        { price: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { availability: { $regex: search, $options: 'i' } },
-        { passengers: { $regex: search, $options: 'i' } },
-      ]
+        { type: { $regex: search, $options: "i" } },
+        { speed: { $regex: search, $options: "i" } },
+        { price: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+        { availability: { $regex: search, $options: "i" } },
+        { passengers: { $regex: search, $options: "i" } },
+      ],
     });
-    if(!data){
-      return res.status(400).json({message:"No Data Found"})
+    if (!data) {
+      return res.status(400).json({ message: "No Data Found" });
     }
-    return res.status(200).json({message:"Searched Successfully",result:data})
+    return res
+      .status(200)
+      .json({ message: "Searched Successfully", result: data });
   } catch (error) {
     console.log(error);
-    return res.status(500).json(error)
+    return res.status(500).json(error);
   }
-}
+};
 
-//sub category
+/**
+ * Sub Category
+ */
 exports.explorecategories = async (req, res) => {
   try {
     const limitNumber = 6;
     const categories = await Category.find({}).limit(limitNumber);
-    res.status(200).json({message:"Data fetched",categories:categories})
+    res.status(200).json({ message: "Data fetched", categories: categories });
   } catch (error) {
     res.status(500).send({ message: error.message } || "Error Ocurred");
   }
@@ -772,8 +780,15 @@ exports.exploreCategoriesById = async (req, res) => {
   try {
     let categoryId = req.params.id;
     const categoryById = await Category.find({ type: categoryId });
-    res.status(200).json({message:"Data after filtered",categoryId:categoryId,data:categoryById})
+    res
+      .status(200)
+      .json({
+        message: "Data after filtered",
+        categoryId: categoryId,
+        data: categoryById,
+      });
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occured" });
   }
 };
+

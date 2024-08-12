@@ -1,5 +1,6 @@
 const Categorymodify = require("../models/Categorymodify");
 const Subcategory = require("../models/Subcategory");
+const Type=require('../models/Type')
 const cloudinary = require("cloudinary").v2;
 /**
  *  Cloudinary configuration
@@ -30,10 +31,10 @@ exports.getModifyCategories = async (req, res) => {
  */
 exports.addModifyCategories = async (req, res) => {
   try {
-    const { chartertype, description } = req.body;
+    const { chartertype, description ,section} = req.body;
     // console.log(chartertype, description);
     // Validate required fields
-    if (!chartertype || !description) {
+    if (!chartertype || !description || !section) {
       return res.status(400).json({ message: "Missing fields" });
     }
 
@@ -51,6 +52,7 @@ exports.addModifyCategories = async (req, res) => {
       chartertype,
       description,
       image: result.secure_url,
+      section
     });
 
     // Save to database
@@ -68,9 +70,9 @@ exports.addModifyCategories = async (req, res) => {
 exports.editModifyCharterById = async (req, res) => {
   try {
     const id = req.params.id;
-    const { chartertype, description } = req.body;
+    const { chartertype, description ,section } = req.body;
 
-    if (!id || (!chartertype && !description && !req.file)) {
+    if (!id || (!chartertype && !description && !req.file && !section)) {
       return res
         .status(400)
         .json({ message: "ID or fields to update are missing" });
@@ -88,7 +90,7 @@ exports.editModifyCharterById = async (req, res) => {
 
     const updatedCategory = await Categorymodify.findByIdAndUpdate(
       id,
-      { chartertype, description, image },
+      { chartertype, description, image, section },
       { new: true }
     );
 
@@ -343,6 +345,139 @@ exports.deleteModifySubCharterById = async (req, res) => {
     }
 
     await Subcategory.findByIdAndDelete(id);
+    return res.status(200).json({ message: "Data deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+/** 
+ * On Demand Search Api
+ */
+exports.onDemandSearch = async (req, res) => {
+  try {
+    const { departure, arrival, date, pax, section } = req.body;
+    if (!departure || !arrival || !date || !pax || !section) {
+      return res.status(400).json({ message: "Missing Fields" });
+    }
+
+    const typeData = await Type.findOne({ section: section });
+    if (!typeData) {
+      return res
+        .status(400)
+        .json({ message: "There is no such type of Sevice" });
+    }
+
+
+    console.log(typeData)
+    const categoryData = await Categorymodify.findOne({
+      section: typeData.section,
+    });
+
+    if (!categoryData) {
+      return res
+        .status(400)
+        .json({ message: "No Categories of Particular Section" });
+    }
+
+    console.log(categoryData);
+
+    const SubCategoryType = await Subcategory.find({
+      chartertype: categoryData.chartertype,
+      departure: departure,
+      arrival: arrival,
+      date: date,
+      pax:pax
+    });
+
+    console.log(SubCategoryType);
+
+    if (SubCategoryType.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Sorry there are no flights on particular Search" });
+    }
+    res
+      .status(200)
+      .json({ message: "Data Searched Successfully", data: SubCategoryType });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({message:"Server Error"})
+  }
+};
+
+/**
+ * Type Section Starts
+ */
+exports.sectionAdding = async (req, res) => {
+  try {
+    const { section, lit } = req.body;
+    if (!section || !lit) {
+      return res.status(400).json({ message: "Missing fields" });
+    }
+
+    // Use `findOne` instead of `find` to check for existence
+    const exist = await Type.findOne({ section: section, lit: lit });
+    if (exist) {
+      return res.status(400).json({ message: "Type already exists" });
+    }
+
+    // Create a new type entry
+    const addData = new Type({
+      section,
+      lit
+    });
+
+    // Await the save operation
+    await addData.save();
+
+    // Respond with success message
+    res.status(201).json({ message: "Type added successfully", data: addData });
+  } catch (error) {
+    // Send error message with status 500
+    res.status(500).json({ message: error.message || "Error occurred" });
+  }
+};
+
+
+/**
+ * Get section for all Data
+ */
+
+exports.getAllTypes = async (req, res) => {
+  try {
+    const data = await Type.find({});
+    if (!data) {
+      return res.status(404).json({ message: "Error in fetching the data" });
+    }
+    return res.status(200).json({ message: "Data fetched successfully", data });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
+/**
+ * Delete Type
+ */
+
+exports.deleteTypeById = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    if (!id) {
+      return res.status(400).json({ message: "ID is missing" });
+    }
+
+    const category = await Type.findById(id);
+    if (!category) {
+      return res.status(404).json({ message: "Data not found" });
+    }
+
+    await Type.findByIdAndDelete(id);
     return res.status(200).json({ message: "Data deleted successfully" });
   } catch (error) {
     console.error(error);
