@@ -7,7 +7,7 @@ const port = 8000;
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const cors = require('cors');
-                        
+
 dotenv.config();
 
 // Static Files
@@ -22,6 +22,21 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(expressLayouts);
 // app.set('view engine', 'ejs');
 // app.set('views', './views');
+
+// Suhail Edit
+
+let components = ['NavHeroBar', 'ShowEstimates', 'OurServices', 'AboutFlight', 'LearnMore', 'LuxuryCharter', 'PushSearchRes', 'Testimonials'];
+
+app.get('/api/components', (req, res) => {
+  res.json(components);
+});
+
+app.post('/api/components', (req, res) => {
+  components = req.body;
+  res.json({ message: 'Components updated successfully' });
+});
+
+// Suhail Edit ends
 
 // Routes
 const adminRoutes = require('./server/adminRoutes/adminRoutes');
