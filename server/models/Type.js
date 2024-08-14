@@ -4,7 +4,7 @@ const TypeSchema=mongoose.Schema({
     type:String,
     required:true
    },
-   lit:{
+   active:{
     type:String,
     required:true
    }

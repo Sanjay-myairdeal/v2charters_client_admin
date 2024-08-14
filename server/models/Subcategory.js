@@ -4,6 +4,10 @@ const SubcategorySchema=mongoose.Schema({
         type:String,
         required:true
     },
+    subCategoryName:{
+        type:String,
+        required:true
+    },
     pax:{
         type:String,
         required:true
