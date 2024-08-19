@@ -141,6 +141,7 @@ router.delete(
  * Filter Category Data
  */
 router.get("/filter/:chartertype", modifyController.getsubCategorybyType);
+router.get('/categorybytype/:type',modifyController.filterByType)
 
 
 /**On Demand Search api */

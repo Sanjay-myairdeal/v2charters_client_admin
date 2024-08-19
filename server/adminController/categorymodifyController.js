@@ -1,6 +1,6 @@
 const Categorymodify = require("../models/Categorymodify");
 const Subcategory = require("../models/Subcategory");
-const Type=require('../models/Type')
+const Type = require("../models/Type");
 const cloudinary = require("cloudinary").v2;
 /**
  *  Cloudinary configuration
@@ -31,7 +31,7 @@ exports.getModifyCategories = async (req, res) => {
  */
 exports.addModifyCategories = async (req, res) => {
   try {
-    const { chartertype, description ,section} = req.body;
+    const { chartertype, description, section } = req.body;
     // console.log(chartertype, description);
     // Validate required fields
     if (!chartertype || !description || !section) {
@@ -52,7 +52,7 @@ exports.addModifyCategories = async (req, res) => {
       chartertype,
       description,
       image: result.secure_url,
-      section
+      section,
     });
 
     // Save to database
@@ -169,7 +169,7 @@ exports.addSubCategories = async (req, res) => {
     // Validate other fields if necessary
     if (
       !chartertype ||
-      !subCategoryName||
+      !subCategoryName ||
       !pax ||
       !speed ||
       !price ||
@@ -273,7 +273,7 @@ exports.editSubCategoryById = async (req, res) => {
     } = req.body;
     if (
       !chartertype ||
-      !subCategoryName||
+      !subCategoryName ||
       !pax ||
       !speed ||
       !price ||
@@ -474,3 +474,28 @@ exports.deleteTypeById = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+/**
+ * Get category based on Type
+ */
+exports.filterByType = async (req, res) => {
+  try {
+    const urlType = req.params.type;
+    if (!urlType) {
+      res.status(404).json({ message: "params in the url is not Found" });
+    }
+    const filteredCategory = await Categorymodify.find({ section: urlType });
+    if (!filteredCategory) {
+      res.status(404).json({ message: "No Categories of specific type" });
+    }
+    res
+      .status(200)
+      .json({ message: "Filtered Data Successfully", data: filteredCategory });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server is Error" });
+  }
+};
+/**
+ * Get Sub Category based on Category
+ */
