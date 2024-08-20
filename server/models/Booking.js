@@ -12,11 +12,11 @@ const BookingSchema=mongoose.Schema({
         type:String,
         required:true
     },
-    from:{
+    departure:{
         type:String,
         required:true
     },
-    to:{
+    arrival:{
         type:String,
         required:true
     },

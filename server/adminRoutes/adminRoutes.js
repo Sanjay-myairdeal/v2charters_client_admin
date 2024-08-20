@@ -47,11 +47,7 @@ router.put(
 );
 router.delete("/deletecharterbyid/:id", adminController.deleteCharterById);
 
-/** Booking Section Routes Starts */
-router.get("/getallbookings", adminController.getAllBookings);
-router.post("/addbooking", adminController.addBooking);
-router.post("/sorted", adminController.filterDate);
-router.delete("/deletebookingbyid/:id", adminController.deleteBookingById);
+
 
 /** Empty legs Section Starts */
 router.get("/getallemptylegs", adminController.getAllEmptyLegs);
@@ -153,3 +149,18 @@ router.post('/demandsearch',modifyController.onDemandSearch)
 router.get('/getalltypes',modifyController.getAllTypes)
 router.post('/addsections',modifyController.sectionAdding)
 router.delete('/deletetype/:id',modifyController.deleteTypeById)
+
+
+/**
+ * Get Modify Subcategory by Id
+ */
+router.get('/getmodifysubcategorybyid/:id',modifyController.getSubCategoryId)
+
+
+
+
+/** Modify Booking Section Routes Starts */
+router.get("/getallbookings", modifyController.getAllBookings);
+router.post("/addbooking", modifyController.addBooking);
+router.post("/sorted", modifyController.filterDate);
+router.delete("/deletebookingbyid/:id", modifyController.deleteBookingById);
