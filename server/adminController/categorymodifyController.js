@@ -120,18 +120,27 @@ exports.deleteModifyCharterById = async (req, res) => {
       return res.status(400).json({ message: "ID is missing" });
     }
 
+    // Fetch the Categorymodify document by its ID
     const category = await Categorymodify.findById(id);
+  
     if (!category) {
       return res.status(404).json({ message: "Data not found" });
     }
 
+    // Delete all Subcategory documents related to the chartertype of the fetched Categorymodify document
+    await Subcategory.deleteMany({ chartertype: category.chartertype });
+
+    // Delete the Categorymodify document
     await Categorymodify.findByIdAndDelete(id);
+
+    // Respond with a success message
     return res.status(200).json({ message: "Data deleted successfully" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
   }
 };
+
 
 /**
  * Get Sub Category Data
@@ -555,18 +564,34 @@ exports.deleteTypeById = async (req, res) => {
       return res.status(400).json({ message: "ID is missing" });
     }
 
-    const category = await Type.findById(id);
-    if (!category) {
-      return res.status(404).json({ message: "Data not found" });
+    // Fetch the Type document by its ID
+    const typeData = await Type.findById(id);
+    if (!typeData) {
+      return res.status(404).json({ message: "Type not found" });
     }
 
+    // Extract chartertype values from related Categorymodify documents
+    const cateData = await Categorymodify.find({ section: typeData.section });
+    const chartertypes = cateData.map(cat => cat.chartertype);
+
+    // Delete related Categorymodify documents
+    await Categorymodify.deleteMany({ section: typeData.section });
+
+    // Delete related Subcategory documents
+    await Subcategory.deleteMany({ chartertype: { $in: chartertypes } });
+
+    // Delete the Type document
     await Type.findByIdAndDelete(id);
+
+    // Respond with a success message
     return res.status(200).json({ message: "Data deleted successfully" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+
 
 /**
  * Get category based on Type

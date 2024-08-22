@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const dbConnect = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI, {
@@ -11,5 +10,4 @@ const dbConnect = async () => {
         console.error("Database connection error:", error);
     }
 };
-
 module.exports = dbConnect;

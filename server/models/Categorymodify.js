@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Subcategory = require("./Subcategory");
 const categorymodifySchema = new mongoose.Schema({
   section: {
     type: String,
@@ -18,4 +19,13 @@ const categorymodifySchema = new mongoose.Schema({
   },
 });
 
+
+categorymodifySchema.pre('remove',async(req,res,next)=>{
+  try {
+    await Subcategory.deleteMany({chartertype: this.chartertype});
+    next();
+  } catch (error) {
+    next(error)
+  }
+})
 module.exports = mongoose.model("Categorymodify", categorymodifySchema);
