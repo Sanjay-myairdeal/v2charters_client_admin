@@ -1,5 +1,4 @@
 const Category = require("../models/Category");
-
 const cloudinary = require("cloudinary").v2;
 const Emptylegs = require("../models/Emptylegs");
 const Emptylegbooking = require("../models/EmptylegsBooking");
@@ -16,9 +15,6 @@ cloudinary.config({
 /**
  * Category Section Starts
  */
-
-/** Get All Categories */
-
 exports.getAllCategories = async (req, res) => {
   try {
     const data = await Category.find({});
@@ -161,7 +157,6 @@ exports.deleteCharterById = async (req, res) => {
   }
 };
 /**Category section Ends */
-
 
 /** Empty Legs Section Starts */
 exports.getAllEmptyLegs = async (req, res) => {
@@ -461,21 +456,17 @@ exports.deleteEmptyLegBookingById = async (req, res) => {
 exports.filterEmptyLegDate = async (req, res) => {
   try {
     const { from, to } = req.body;
-
     // Check if the from and to dates are provided
     if (!from || !to) {
       return res
         .status(400)
         .json({ message: "From and To dates are required" });
     }
-
     const allBookings = await Emptylegbooking.find();
-
     // Filter bookings within the date range
     const filteredData = allBookings.filter((item) => {
       return item.date >= from && item.date <= to;
     });
-
     // Send the filtered data in the response
     res.status(200).json({
       message: "Data fetched successfully",
@@ -550,7 +541,9 @@ exports.getAllFeedbacks = async (req, res) => {
   }
 };
 
-/**Delet the Feedback */
+/**
+ * Delet the Feedback
+ *  */
 
 exports.deleteFeedbackById = async (req, res) => {
   try {
@@ -578,9 +571,6 @@ exports.Search = async (req, res) => {
     if (!search) {
       return res.status(404).json({ message: "Missing the Fields" });
     }
-    // const data=await Category.find({
-    //   $text:{$search:search , $diacriticSensitive:true},
-    // });
     const data = await Category.find({
       $or: [
         { type: { $regex: search, $options: "i" } },
@@ -617,22 +607,18 @@ exports.explorecategories = async (req, res) => {
 };
 
 /**
- * GET /categories/:id
  * Categories By Id
  */
 exports.exploreCategoriesById = async (req, res) => {
   try {
     let categoryId = req.params.id;
     const categoryById = await Category.find({ type: categoryId });
-    res
-      .status(200)
-      .json({
-        message: "Data after filtered",
-        categoryId: categoryId,
-        data: categoryById,
-      });
+    res.status(200).json({
+      message: "Data after filtered",
+      categoryId: categoryId,
+      data: categoryById,
+    });
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occured" });
   }
 };
-

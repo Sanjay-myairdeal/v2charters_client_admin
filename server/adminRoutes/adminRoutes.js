@@ -164,3 +164,10 @@ router.get("/getallbookings", modifyController.getAllBookings);
 router.post("/addbooking", modifyController.addBooking);
 router.post("/sorted", modifyController.filterDate);
 router.delete("/deletebookingbyid/:id", modifyController.deleteBookingById);
+
+
+/**
+ * Routes for log details
+ */
+router.post('/addlogs',modifyController.addLogDetails)
+router.get('/getalllogs',modifyController.getAllLogs)

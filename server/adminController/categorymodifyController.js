@@ -4,6 +4,7 @@ const Type = require("../models/Type");
 const email_verifier = require("email-verifier-node");
 const Booking = require("../models/Booking");
 const cloudinary = require("cloudinary").v2;
+const Log=require('../models/Log')
 /**
  *  Cloudinary configuration
  */
@@ -217,7 +218,7 @@ exports.addSubCategories = async (req, res) => {
 
     const image = req.file ? req.file.path : null;
  const caldiscount=(discount/100)*price
- console.log(caldiscount)
+//  console.log(caldiscount)
     if (!image) {
       return res.status(400).json({ message: "Image file is required" });
     }
@@ -463,7 +464,7 @@ exports.onDemandSearch = async (req, res) => {
         .json({ message: "There is no such type of Service" });
     }
 
-    console.log(typeData);
+    // console.log(typeData);
 
     const categoryData = await Categorymodify.find({ section: typeData.section });
 
@@ -473,10 +474,10 @@ exports.onDemandSearch = async (req, res) => {
         .json({ message: "No Categories of Particular Section" });
     }
 
-    console.log(categoryData);
+    // console.log(categoryData);
 
     const chartertypes = categoryData.map(cat => cat.chartertype);
-    console.log('Charter Types:', chartertypes);
+    // console.log('Charter Types:', chartertypes);
 
     const SubCategoryType = await Subcategory.find({
       chartertype: { $in: chartertypes },
@@ -486,7 +487,7 @@ exports.onDemandSearch = async (req, res) => {
       pax: pax,
     });
 
-    console.log(SubCategoryType);
+    // console.log(SubCategoryType);
     if (SubCategoryType.length === 0) {
       return res
         .status(400)
@@ -767,3 +768,40 @@ exports.filterDate = async (req, res) => {
   }
 };
 /** Booking Section Ends */
+
+
+/**
+ * Log Details API
+ */
+
+//adding log details
+exports.addLogDetails=async(req,res)=>{
+  try {
+    const {log}=req.body;
+    if(!log){
+     return res.status(404).json({message:"log details not captured"})
+    }
+  const logData=new Log({
+    log:log
+  })
+  await logData.save();
+  return res.status(200).json({message:"Log data recorded successfully"})
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({message:"Server is not running"})
+  }
+}
+
+//get all log details
+exports.getAllLogs=async(req,res)=>{
+  try {
+    const response=await Log.find({});
+    if(response.length == 0){
+      return res.status(404).json({message:"No log details"})
+    }
+    return res.status(200).json({message:"log detils fetched successfully",data:response})
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({message:"Server is not running"})
+  }
+}
