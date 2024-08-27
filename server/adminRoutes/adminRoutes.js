@@ -82,6 +82,7 @@ router.delete(
 router.post("/register", loginController.register);
 router.post("/login", loginController.login);
 router.delete("/deleteadmin/:id", loginController.deleteAdmin);
+router.get('/getalladmins',loginController.getAllAdmins)
 
 /** Feedback Section */
 router.post("/addfeedback", adminController.addFeedback);
@@ -149,7 +150,7 @@ router.post('/demandsearch',modifyController.onDemandSearch)
 router.get('/getalltypes',modifyController.getAllTypes)
 router.post('/addsections',modifyController.sectionAdding)
 router.delete('/deletetype/:id',modifyController.deleteTypeById)
-
+router.put('/updatetype/:id',modifyController.editTypeById)
 
 /**
  * Get Modify Subcategory by Id
