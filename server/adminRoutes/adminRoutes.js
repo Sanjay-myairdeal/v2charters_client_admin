@@ -6,7 +6,6 @@ const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("cloudinary").v2;
 const loginController = require("../adminController/loginController");
 const modifyController = require("../adminController/categorymodifyController");
-
 // Cloudinary configuration
 cloudinary.config({
   cloud_name: "dybrajkta",
@@ -165,6 +164,13 @@ router.get("/getallbookings", modifyController.getAllBookings);
 router.post("/addbooking", modifyController.addBooking);
 router.post("/sorted", modifyController.filterDate);
 router.delete("/deletebookingbyid/:id", modifyController.deleteBookingById);
+
+/**
+ * Enquiry Routs
+ */
+router.post('/addenquiry',modifyController.addEnquiry)
+router.delete('/deleteenquirybyid/:id',modifyController.deleteEnquiryById)
+router.get('/getallenquiry',modifyController.getAllEnquiry)
 
 
 /**

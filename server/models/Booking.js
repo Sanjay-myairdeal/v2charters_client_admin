@@ -1,5 +1,9 @@
 const mongoose=require('mongoose');
 const BookingSchema=mongoose.Schema({
+    name:{
+        type:String,
+        required:true
+    },
     email:{
         type:String,
         required:true

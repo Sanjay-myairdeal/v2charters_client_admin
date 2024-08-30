@@ -4,6 +4,7 @@ const Type = require("../models/Type");
 const email_verifier = require("email-verifier-node");
 const Booking = require("../models/Booking");
 const cloudinary = require("cloudinary").v2;
+const Enquiry=require('../models/Enquiry')
 const Log=require('../models/Log')
 /**
  *  Cloudinary configuration
@@ -842,10 +843,12 @@ exports.filterDate = async (req, res) => {
 
 
 /**
- * Log Details API
+ * Log Details API Starts
  */
 
-//adding log details
+/**
+ * Adding the Log details
+ */
 exports.addLogDetails=async(req,res)=>{
   try {
     const {log}=req.body;
@@ -863,7 +866,9 @@ exports.addLogDetails=async(req,res)=>{
   }
 }
 
-//get all log details
+/**
+ * Get all the Log Details
+ */
 exports.getAllLogs = async (req, res) => {
   try {
     const response = await Log.find({});
@@ -874,6 +879,106 @@ exports.getAllLogs = async (req, res) => {
     
     return res.status(200).json({
       message: "Log details fetched successfully",
+      data: response
+    });
+  } catch (error) {
+    console.error("Error fetching logs:", error.message);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
+/**
+ * Enquiry Controllers
+ */
+
+exports.addEnquiry = async (req, res) => {
+  try {
+    const {
+      enquiryname,
+      enquiryemail,
+      enquiryphone,
+      enquirydate,
+      enquirytype,
+    } = req.body;
+
+    // Check for missing fields
+    if (
+      !enquiryname ||
+      !enquiryemail ||
+      !enquiryphone ||
+      !enquirydate ||
+      !enquirytype
+    ) {
+      return res.status(400).json({ message: "Missing fields" });
+    }
+
+    const verificationResult = await email_verifier.verify_email(enquiryemail);
+    if (!verificationResult.is_verified) {
+      return res.status(400).json({
+        message: "The email account that you tried to reach does not exist.",
+      });
+    }
+
+    // Create a new booking
+    const newEnquiry = new Enquiry({
+      enquiryname,
+      enquiryemail,
+      enquiryphone,
+      enquirydate,
+      enquirytype,
+    });
+
+    // Save the booking
+    await newEnquiry.save();
+
+    return res
+      .status(200)
+      .json({ message: "Enquiry data inserted successfully" });
+  } catch (error) {
+    console.error("Error:", error.message);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
+};
+
+/** Delete Enquiry Booking */
+exports.deleteEnquiryById = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    if (!id) {
+      return res.status(400).json({ message: "ID is missing" });
+    }
+
+    const enquiry = await Enquiry.findById(id);
+    if (!enquiry) {
+      return res.status(404).json({ message: "Data not found" });
+    }
+
+    await Enquiry.findByIdAndDelete(id);
+    return res.status(200).json({ message: "Data deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+/**
+ * Get All Enquiries
+ */
+
+
+exports.getAllEnquiry = async (req, res) => {
+  try {
+    const response = await Enquiry.find({});
+    
+    if (response.length === 0) {
+      return res.status(404).json({ message: "No Enquiries found" });
+    }
+    
+    return res.status(200).json({
+      message: "All Enquiries Fetched",
       data: response
     });
   } catch (error) {
