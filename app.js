@@ -25,7 +25,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Suhail Edit
 
-let components = ['NavHeroBar', 'ShowEstimates', 'OurServices', 'AboutFlight', 'LearnMore', 'LuxuryCharter', 'PushSearchRes', 'Testimonials'];
+let components = ['NavHeroBar', 'ShowEstimates', 'OurServices', 'AboutFlight', 'LearnMore', 'OurFleets', 'PushSearchRes', 'Testimonials'];
 
 app.get('/api/components', (req, res) => {
   res.json(components);
