@@ -706,10 +706,10 @@ exports.getAllBookings = async (req, res) => {
 /**Add booking */
 exports.addBooking = async (req, res) => {
   try {
-    const { type, departure, arrival, passengers, date, email, phone } = req.body;
+    const { name,type, departure, arrival, passengers, date, email, phone } = req.body;
 
     // Check for missing fields
-    if (!type || !passengers || !departure || !arrival || !date || !email || !phone) {
+    if (!name || !type || !passengers || !departure || !arrival || !date || !email || !phone) {
       return res.status(400).json({ message: "Missing fields" });
     }
 
@@ -722,6 +722,7 @@ exports.addBooking = async (req, res) => {
 
     // Create a new booking
     const newBooking = new Booking({
+      name,
       type,
      departure,
       arrival,
@@ -765,15 +766,15 @@ exports.getBookingById = async (req, res) => {
 exports.editBookingById = async (req, res) => {
   try {
     const id = req.params.id;
-    const { type, departure, arrival, passengers, date, email, phone } = req.body;
+    const { name,type, departure, arrival, passengers, date, email, phone } = req.body;
 
-    if (!type || !passengers || !arrival || !departure || !date || !email || !phone) {
+    if (!name ||!type || !passengers || !arrival || !departure || !date || !email || !phone) {
       return res.status(400).json({ message: "Fields to update are missing" });
     }
 
     const updatedBooking = await Booking.findByIdAndUpdate(
       id,
-      { type, departure, arrival, passengers, date, email, phone },
+      {name, type, departure, arrival, passengers, date, email, phone },
       { new: true }
     );
 
