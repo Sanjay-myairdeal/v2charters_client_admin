@@ -991,27 +991,36 @@ exports.getAllEnquiry = async (req, res) => {
 };
 
 /**
- * Filter flights by type and Category
+ * Filter flights by type and category
  */
-exports.filterByTypeAndCategory=async(req,res)=>{
+exports.filterByTypeAndCategory = async (req, res) => {
   try {
-    const {section,chartertype}=req.params
-    if(!section || !chartertype){
-      return res.status(404).json({ message: "Id in the url are missing" });
+    const { section, chartertype } = req.params;
+
+    // Check if required parameters are present
+    if (!section || !chartertype) {
+      return res.status(400).json({ message: "Required parameters 'section' or 'chartertype' are missing." });
     }
-    const data=await Subcategory.findOne({section:section,chartertype:chartertype})
-    if(!data){
-      return res.status(404).json({ message: "No data found" });
+
+    // Query to find the data
+    const data = await Subcategory.findOne({ section, chartertype });
+
+    // Check if data is found
+    if (!data) {
+      return res.status(404).json({ message: "No subcategories found matching the provided section and charter type." });
     }
+
+    // Return success response with data
     return res.status(200).json({
-      message: "All Subcategories  Fetched",
-      data: data
+      message: "Subcategories fetched successfully.",
+      data: data,
     });
   } catch (error) {
-    console.error("Error fetching logs:", error.message);
-    return res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Error fetching subcategories:", error.message);
+    return res.status(500).json({ message: "An error occurred while fetching subcategories.", error: error.message });
   }
-}
+};
+
 
 
 // async function insertDynamicSubcategoryData() {
