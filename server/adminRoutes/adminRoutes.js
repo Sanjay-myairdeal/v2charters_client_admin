@@ -178,3 +178,8 @@ router.get('/getallenquiry',modifyController.getAllEnquiry)
  */
 router.post('/addlogs',modifyController.addLogDetails)
 router.get('/getalllogs',modifyController.getAllLogs)
+
+/**
+ * Filter data based on Type and Category
+ */
+router.post('/filterbytypeandcategory/:section/:chartertype',modifyController.filterByTypeAndCategory)

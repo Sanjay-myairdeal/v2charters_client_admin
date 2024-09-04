@@ -1,5 +1,9 @@
 const mongoose=require('mongoose');
 const SubcategorySchema=mongoose.Schema({
+    section:{
+        type:String,
+        required:true
+    },
     chartertype:{
         type:String,
         required:true

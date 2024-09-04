@@ -165,6 +165,7 @@ exports.getSubCategories = async (req, res) => {
 exports.addSubCategories = async (req, res) => {
   try {
     const {
+      section,
       chartertype,
       subCategoryName,
       pax,
@@ -195,6 +196,7 @@ exports.addSubCategories = async (req, res) => {
 
     // Validate other fields if necessary
     if (
+      !section ||
       !chartertype ||
       !subCategoryName ||
       !pax ||
@@ -238,6 +240,7 @@ exports.addSubCategories = async (req, res) => {
 
     // Create new category modification
     const newModify = new Subcategory({
+      section,
       chartertype,
       subCategoryName,
       pax,
@@ -316,6 +319,7 @@ exports.editSubCategoryById = async (req, res) => {
       return res.status(404).json({ message: "Id is missing" });
     }
     const {
+      section,
       chartertype,
       subCategoryName,
       pax,
@@ -344,6 +348,7 @@ exports.editSubCategoryById = async (req, res) => {
       discount
     } = req.body;
     if (
+      !section ||
       !chartertype ||
       !subCategoryName ||
       !pax ||
@@ -387,6 +392,7 @@ exports.editSubCategoryById = async (req, res) => {
     const updatedData = await Subcategory.findByIdAndUpdate(
       id,
       {
+        section,
         chartertype,
         subCategoryName,
         pax,
@@ -467,30 +473,30 @@ exports.onDemandSearch = async (req, res) => {
       return res.status(400).json({ message: "Missing Fields" });
     }
 
-    const typeData = await Type.findOne({ section: section });
-    if (!typeData) {
-      return res
-        .status(400)
-        .json({ message: "There is no such type of Service" });
-    }
+    // const typeData = await Type.findOne({ section: section });
+    // if (!typeData) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "There is no such type of Service" });
+    // }
 
     // console.log(typeData);
 
-    const categoryData = await Categorymodify.find({ section: typeData.section });
+    // const categoryData = await Categorymodify.find({ section: typeData.section });
 
-    if (!categoryData || categoryData.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "No Categories of Particular Section" });
-    }
+    // if (!categoryData || categoryData.length === 0) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "No Categories of Particular Section" });
+    // }
 
     // console.log(categoryData);
 
-    const chartertypes = categoryData.map(cat => cat.chartertype);
+    // const chartertypes = categoryData.map(cat => cat.chartertype);
     // console.log('Charter Types:', chartertypes);
 
     const SubCategoryType = await Subcategory.find({
-      chartertype: { $in: chartertypes },
+      section:section,
       departure: departure,
       arrival: arrival,
       date: date,
@@ -571,15 +577,12 @@ exports.deleteTypeById = async (req, res) => {
       return res.status(404).json({ message: "Type not found" });
     }
 
-    // Extract chartertype values from related Categorymodify documents
-    const cateData = await Categorymodify.find({ section: typeData.section });
-    const chartertypes = cateData.map(cat => cat.chartertype);
 
-    // Delete related Categorymodify documents
+  // Delete related Categorymodify documents
     await Categorymodify.deleteMany({ section: typeData.section });
 
     // Delete related Subcategory documents
-    await Subcategory.deleteMany({ chartertype: { $in: chartertypes } });
+    await Subcategory.deleteMany({ section: typeData.section });
 
     // Delete the Type document
     await Type.findByIdAndDelete(id);
@@ -986,3 +989,136 @@ exports.getAllEnquiry = async (req, res) => {
     return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+/**
+ * Filter flights by type and Category
+ */
+exports.filterByTypeAndCategory=async(req,res)=>{
+  try {
+    const {section,chartertype}=req.params
+    if(!section || !chartertype){
+      return res.status(404).json({ message: "Id in the url are missing" });
+    }
+    const data=await Subcategory.findOne({section:section,chartertype:chartertype})
+    if(!data){
+      return res.status(404).json({ message: "No data found" });
+    }
+    return res.status(200).json({
+      message: "All Subcategories  Fetched",
+      data: data
+    });
+  } catch (error) {
+    console.error("Error fetching logs:", error.message);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+}
+
+
+// async function insertDynamicSubcategoryData() {
+//   try {
+//       const subcategories = [];
+
+//       for (let i = 0; i < 30; i++) {
+//           const date = new Date();
+//           const formattedDate = `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`; // Format date as dd-mm-yyyy
+
+//           subcategories.push({
+//               chartertype: `Type B`,
+//               subCategoryName: `Subcategory ${i + 1}`,
+//               pax: `${Math.floor(Math.random() * 100)}`,
+//               speed: `${Math.floor(Math.random() * 1000)} km/h`,
+//               price: `${Math.floor(Math.random() * 10000)}`,
+//               description: `Description for subcategory ${i + 1}`,
+//               image: `image${i + 1}.jpg`,
+//               availability: Math.random() > 0.5 ? 'yes' : 'no',
+//               bookingtype: `Type ${Math.floor(Math.random() * 10)}`,
+//               departure: `City ${Math.floor(Math.random() * 10)}`,
+//               arrival: `City ${Math.floor(Math.random() * 10)}`,
+//               journeytype: `Journey ${Math.floor(Math.random() * 5)}`,
+//               date: formattedDate, // Use the formatted date in dd-mm-yyyy format
+//               yom: `${2024}`,
+//               seats: `${Math.floor(Math.random() * 20)}`,
+//               crew: `${Math.floor(Math.random() * 10)}`,
+//               airhosts: `${Math.floor(Math.random() * 10)}`,
+//               levatory: `${Math.floor(Math.random() * 5)}`,
+//               fromtime: `00:${Math.floor(Math.random() * 60)}:${Math.floor(Math.random() * 60)}`,
+//               endtime: `23:${Math.floor(Math.random() * 60)}:${Math.floor(Math.random() * 60)}`,
+//               flyingrange: `${Math.floor(Math.random() * 5000)} km`,
+//               cabinwidth: `${Math.random() * 10}`,
+//               cabinheight: `${Math.random() * 10}`,
+//               baggage: `${Math.floor(Math.random() * 100)} kg`,
+//               cabinlength: `${Math.random() * 20}`,
+//               pilot: `Pilot ${i + 1}`,
+//               discount: `${Math.floor(Math.random() * 50)}`,
+//               discountprice: `${Math.floor(Math.random() * 5000)}`,
+//               image:`https://res.cloudinary.com/dybrajkta/image/upload/v1724732849/eowmbrasulcliihtyafb.jpg`
+//           });
+//       }
+
+//       await Subcategory.insertMany(subcategories);
+//       console.log('100 subcategories with Type B inserted successfully');
+//   } catch (error) {
+//       console.log('Error inserting subcategories:', error);
+//   }
+// }
+
+// Example usage
+// insertDynamicSubcategoryData();
+
+/**
+ * Function to insert multiple Categorymodify documents.
+ * @param {number} count - The number of documents to insert.
+ */
+// async function insertDynamicCategoryModifyData(count) {
+//   try {
+//       const categorymodifies = [];
+//       const sections = ['Charters Flight']; // Only one section for now
+//       const charterTypes = ['Type A', 'Type B', 'Type C', 'Type D', 'Type E']; // Add more as needed
+
+//       for (let i = 0; i < count; i++) {
+//           categorymodifies.push({
+//               section: sections[0],
+//               chartertype: charterTypes[i % charterTypes.length], // Cycle through the types
+//               description: `Description for type ${i + 1}`,
+//               image: `https://res.cloudinary.com/dybrajkta/image/upload/v1724960398/qtvybcnrhctkq2csao9q.jpg`
+//           });
+//       }
+
+//       await Categorymodify.insertMany(categorymodifies);
+//       console.log(`${count} Categorymodify documents inserted successfully`);
+//   } catch (error) {
+//       console.log('Error inserting Categorymodify documents:', error);
+//   }
+// }
+
+// // Example usage
+// insertDynamicCategoryModifyData(100); // Insert 100 documents
+
+
+
+/**
+ * Function to insert multiple Type documents.
+ * @param {number} count - The number of types to insert.
+ */
+// async function insertDynamicTypeData(count) {
+//   try {
+//       const types = [];
+
+//       for (let i = 0; i < count; i++) {
+//           types.push({
+//               section: `Section ${i + 1}`,
+//               active: Math.random() > 0.5 ? 'yes' : 'no'
+//           });
+//       }
+
+//       await Type.insertMany(types);
+//       console.log(`${count} types inserted successfully`);
+//   } catch (error) {
+//       console.log('Error inserting types:', error);
+//   }
+// }
+
+// // Example usage
+// insertDynamicTypeData(100); // Insert 100 types
+
+
