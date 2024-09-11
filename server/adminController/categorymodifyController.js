@@ -192,6 +192,8 @@ exports.addSubCategories = async (req, res) => {
       cabinlength,
       pilot,
       discount,
+      duration,
+      reachdate
     } = req.body;
 
     // Validate other fields if necessary
@@ -222,7 +224,9 @@ exports.addSubCategories = async (req, res) => {
       !flyingrange ||
       !cabinlength ||
       !pilot ||
-      !discount
+      !discount ||
+      !duration ||
+      !reachdate
      
     ) {
       return res.status(400).json({ message: "All fields are required" });
@@ -269,6 +273,8 @@ exports.addSubCategories = async (req, res) => {
       pilot,
       discount,
       discountprice:caldiscount,
+      duration,
+      reachdate
     });
 
     // Save to database
@@ -288,7 +294,7 @@ exports.addSubCategories = async (req, res) => {
 exports.getsubCategorybyType = async (req, res) => {
   try {
     const type = req.params.chartertype;
-    console.log(type);
+    // console.log(type);
     if (!type) {
       return res.status(404).json({ message: "Charter type is missing" });
     }
@@ -345,7 +351,9 @@ exports.editSubCategoryById = async (req, res) => {
       flyingrange,
       cabinlength,
       pilot,
-      discount
+      discount,
+      reachdate,
+      duration
     } = req.body;
     if (
       !section ||
@@ -374,7 +382,9 @@ exports.editSubCategoryById = async (req, res) => {
       !flyingrange ||
       !cabinlength ||
       !pilot ||
-      !discount
+      !discount ||
+      !reachdate ||
+      !duration
     ) {
       return res.status(400).json({ message: "Missing fields" });
     }
@@ -392,6 +402,8 @@ exports.editSubCategoryById = async (req, res) => {
     const updatedData = await Subcategory.findByIdAndUpdate(
       id,
       {
+        duration,
+        reachdate,
         section,
         chartertype,
         subCategoryName,
