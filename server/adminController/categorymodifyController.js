@@ -193,7 +193,14 @@ exports.addSubCategories = async (req, res) => {
       pilot,
       discount,
       duration,
-      reachdate
+      reachdate,
+      yor,
+      targetprice,
+      brokercompany,
+      flexibility,
+      operatorname,
+      operatoremail,
+      operatorphone
     } = req.body;
 
     // Validate other fields if necessary
@@ -226,7 +233,14 @@ exports.addSubCategories = async (req, res) => {
       !pilot ||
       !discount ||
       !duration ||
-      !reachdate
+      !reachdate ||
+      !yor ||
+      !targetprice ||
+      !brokercompany ||
+      !flexibility ||
+      !operatoremail ||
+      !operatorname ||
+      !operatorphone
      
     ) {
       return res.status(400).json({ message: "All fields are required" });
@@ -274,7 +288,14 @@ exports.addSubCategories = async (req, res) => {
       discount,
       discountprice:caldiscount,
       duration,
-      reachdate
+      reachdate,
+      yor,
+      targetprice,
+      brokercompany,
+      flexibility,
+      operatorname,
+      operatoremail,
+      operatorphone
     });
 
     // Save to database
@@ -353,7 +374,14 @@ exports.editSubCategoryById = async (req, res) => {
       pilot,
       discount,
       reachdate,
-      duration
+      duration,
+      yor,
+      targetprice,
+      brokercompany,
+      flexibility,
+      operatorname,
+      operatoremail,
+      operatorphone
     } = req.body;
     if (
       !section ||
@@ -384,7 +412,14 @@ exports.editSubCategoryById = async (req, res) => {
       !pilot ||
       !discount ||
       !reachdate ||
-      !duration
+      !duration ||
+      !yor ||
+      !targetprice ||
+      !brokercompany ||
+      !flexibility ||
+      !operatoremail ||
+      !operatorname ||
+      !operatorphone
     ) {
       return res.status(400).json({ message: "Missing fields" });
     }
@@ -432,7 +467,14 @@ exports.editSubCategoryById = async (req, res) => {
         cabinlength,
         pilot,
         discount,
-        caldiscount:caldiscount
+        caldiscount:caldiscount,
+        yor,
+      targetprice,
+      brokercompany,
+      flexibility,
+      operatorname,
+      operatoremail,
+      operatorphone
       },
       { new: true }
     );
@@ -1016,7 +1058,7 @@ exports.filterByTypeAndCategory = async (req, res) => {
     }
 
     // Query to find the data
-    const data = await Subcategory.findOne({ section, chartertype });
+    const data = await Subcategory.find({ section, chartertype });
 
     // Check if data is found
     if (!data) {

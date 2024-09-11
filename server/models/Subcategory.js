@@ -34,6 +34,7 @@ const SubcategorySchema = mongoose.Schema({
   },
   availability: {
     type: String,
+    enum:['yes','no'],
     required: true,
     default: "no",
   },
@@ -52,6 +53,8 @@ const SubcategorySchema = mongoose.Schema({
   journeytype: {
     type: String,
     required: true,
+    enum:["one-way","round-trip","multi-leg"],
+    default:"one-way"
   },
   date: {
     type: String,
@@ -116,6 +119,7 @@ const SubcategorySchema = mongoose.Schema({
   discountprice: {
     type: String,
     required: true,
+    default:"0",
   },
   duration: {
     type: String,
@@ -123,6 +127,38 @@ const SubcategorySchema = mongoose.Schema({
   },
   reachdate:{
     type:String,
+    required:true
+  },
+  yor:{
+    type:String,
+    required:true
+  },
+  targetprice:{
+    type:String,
+    required:true
+  },
+  brokercompany:{
+    type:String,
+    required:true
+  },
+  flexibility:{
+    type:String,
+    required:true,
+    enum:["yes","no"],
+    default:"no"
+  },
+  operatorname:{
+    type:String,
+    required:true,
+  },
+  operatoremail:{
+    type:String,
+    required:true,
+    match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"]
+  },
+  operatorphone:{
+    type:String,
+    match: [/^\d{10}$/, "Please enter a valid phone number"],
     required:true
   }
 });
