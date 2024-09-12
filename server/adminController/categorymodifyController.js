@@ -5,6 +5,7 @@ const email_verifier = require("email-verifier-node");
 const Booking = require("../models/Booking");
 const cloudinary = require("cloudinary").v2;
 const Enquiry=require('../models/Enquiry')
+const FlightDetails = require("../models/FlightDetails");
 const Log=require('../models/Log')
 /**
  *  Cloudinary configuration
@@ -67,15 +68,15 @@ exports.addModifyCategories = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-
 /**
- * Edit Category by id
+ * Edit Category by ID
  */
 exports.editModifyCharterById = async (req, res) => {
   try {
     const id = req.params.id;
     const { chartertype, description, section } = req.body;
 
+    // Check if ID or any fields to update are missing
     if (!id || (!chartertype && !description && !req.file && !section)) {
       return res
         .status(400)
@@ -84,31 +85,58 @@ exports.editModifyCharterById = async (req, res) => {
 
     let image;
 
+    // Handle image upload if a new file is provided
     if (req.file) {
       // Upload the new image to Cloudinary
       const result = await cloudinary.uploader.upload(req.file.path);
       image = result.secure_url;
     } else {
-      image = req.body.image;
+      image = req.body.image; // If no new file, use the existing image
     }
 
+    // Find the original category before the update (for comparison)
+    const preData = await Categorymodify.findById(id);
+    if (!preData) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    // Update the main Categorymodify document
     const updatedCategory = await Categorymodify.findByIdAndUpdate(
       id,
       { chartertype, description, image, section },
       { new: true }
     );
 
+    // Check if the update was successful
     if (!updatedCategory) {
       return res.status(404).json({ message: "Error in updating data" });
     }
-    return res
-      .status(200)
-      .json({ message: "Data updated successfully", updatedCategory });
+
+    // Update all Subcategory documents where the chartertype and section are the same as the pre-update data
+    const updatedSubcategories = await Subcategory.updateMany(
+      {
+        chartertype: preData.chartertype, // Match pre-update chartertype
+        section: preData.section // Match pre-update section
+      },
+      {
+        chartertype: updatedCategory.chartertype, // Update to the new chartertype
+        section: updatedCategory.section // Update to the new section
+      }
+    );
+
+    // Respond with a success message and the updated category
+    return res.status(200).json({
+      message: "Data updated successfully",
+      updatedCategory,
+      updatedSubcategories: updatedSubcategories.modifiedCount // Show how many subcategories were updated
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+
 
 /**
  * Delete Category Data
@@ -159,9 +187,8 @@ exports.getSubCategories = async (req, res) => {
   }
 };
 
-/**
- * Add SubCategories
- */
+
+
 exports.addSubCategories = async (req, res) => {
   try {
     const {
@@ -174,18 +201,12 @@ exports.addSubCategories = async (req, res) => {
       description,
       availability,
       bookingtype,
-      departure,
-      arrival,
-      journeytype,
-      date,
       yom,
       seats,
       crew,
       baggage,
       airhosts,
       levatory,
-      fromtime,
-      endtime,
       cabinheight,
       cabinwidth,
       flyingrange,
@@ -193,17 +214,23 @@ exports.addSubCategories = async (req, res) => {
       pilot,
       discount,
       duration,
-      reachdate,
       yor,
       targetprice,
       brokercompany,
       flexibility,
       operatorname,
       operatoremail,
-      operatorphone
+      operatorphone,
+      departure,
+      arrival,
+      journeytype,
+      date,
+      fromtime,
+      endtime,
+      reachdate
     } = req.body;
 
-    // Validate other fields if necessary
+    // Validate required fields
     if (
       !section ||
       !chartertype ||
@@ -214,18 +241,12 @@ exports.addSubCategories = async (req, res) => {
       !availability ||
       !description ||
       !bookingtype ||
-      !departure ||
-      !arrival ||
-      !journeytype ||
-      !date ||
       !yom ||
       !seats ||
       !crew ||
       !baggage ||
       !airhosts ||
       !levatory ||
-      !fromtime ||
-      !endtime ||
       !cabinheight ||
       !cabinwidth ||
       !flyingrange ||
@@ -233,22 +254,27 @@ exports.addSubCategories = async (req, res) => {
       !pilot ||
       !discount ||
       !duration ||
-      !reachdate ||
       !yor ||
       !targetprice ||
       !brokercompany ||
       !flexibility ||
-      !operatoremail ||
       !operatorname ||
-      !operatorphone
-     
+      !operatoremail ||
+      !operatorphone ||
+      !departure ||
+      !arrival ||
+      !journeytype ||
+      !date ||
+      !fromtime ||
+      !endtime ||
+      !reachdate
     ) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     const image = req.file ? req.file.path : null;
- const caldiscount=(discount/100)*price
-//  console.log(caldiscount)
+    const caldiscount = (discount / 100) * price;
+
     if (!image) {
       return res.status(400).json({ message: "Image file is required" });
     }
@@ -256,53 +282,81 @@ exports.addSubCategories = async (req, res) => {
     // Upload image to Cloudinary
     const result = await cloudinary.uploader.upload(image);
 
-    // Create new category modification
-    const newModify = new Subcategory({
+    // Create flight details object
+    const flightDetails = new FlightDetails({
       section,
-      chartertype,
-      subCategoryName,
-      pax,
-      speed,
-      price,
-      description,
-      availability,
-      bookingtype,
       departure,
       arrival,
       journeytype,
       date,
-      image: result.secure_url,
-      yom,
-      seats,
-      crew,
-      baggage,
-      airhosts,
-      levatory,
       fromtime,
       endtime,
-      cabinheight,
-      cabinwidth,
-      flyingrange,
-      cabinlength,
-      pilot,
-      discount,
-      discountprice:caldiscount,
-      duration,
       reachdate,
-      yor,
-      targetprice,
-      brokercompany,
-      flexibility,
-      operatorname,
-      operatoremail,
-      operatorphone
+      pax,
+      chartertype
     });
 
-    // Save to database
-    await newModify.save();
-    return res
-      .status(201)
-      .json({ message: "Data inserted successfully", addedData: newModify });
+    // Save flight details to the database
+    await flightDetails.save();
+
+    // Check if subcategory exists
+    let subcategory = await Subcategory.findOne({
+      section,
+      chartertype
+    });
+
+    if (subcategory) {
+      // Subcategory exists, add flight details to the existing subcategory
+      subcategory.flightDetails.push(flightDetails._id);
+      await subcategory.save();
+      return res.status(200).json({
+        message: "Flight details added to existing subcategory",
+        addedData: subcategory
+      });
+    } else {
+      // Subcategory does not exist, create a new one
+      subcategory = new Subcategory({
+        section,
+        chartertype,
+        subCategoryName,
+        pax,
+        speed,
+        price,
+        description,
+        availability,
+        bookingtype,
+        image: result.secure_url,
+        yom,
+        seats,
+        crew,
+        baggage,
+        airhosts,
+        levatory,
+        cabinheight,
+        cabinwidth,
+        flyingrange,
+        cabinlength,
+        pilot,
+        discount,
+        discountprice: caldiscount,
+        duration,
+        yor,
+        targetprice,
+        brokercompany,
+        flexibility,
+        operatorname,
+        operatoremail,
+        operatorphone,
+        flightDetails: [flightDetails._id] // Reference to flight details
+      });
+
+      // Save subcategory to the database
+      await subcategory.save();
+      return res.status(201).json({
+        message: "New subcategory created with flight details",
+        addedData: subcategory
+      });
+    }
   } catch (error) {
     console.error("Error adding subcategory:", error);
     return res.status(500).json({ message: "Server error" });
@@ -527,47 +581,34 @@ exports.onDemandSearch = async (req, res) => {
       return res.status(400).json({ message: "Missing Fields" });
     }
 
-    // const typeData = await Type.findOne({ section: section });
-    // if (!typeData) {
-    //   return res
-    //     .status(400)
-    //     .json({ message: "There is no such type of Service" });
-    // }
-
-    // console.log(typeData);
-
-    // const categoryData = await Categorymodify.find({ section: typeData.section });
-
-    // if (!categoryData || categoryData.length === 0) {
-    //   return res
-    //     .status(400)
-    //     .json({ message: "No Categories of Particular Section" });
-    // }
-
-    // console.log(categoryData);
-
-    // const chartertypes = categoryData.map(cat => cat.chartertype);
-    // console.log('Charter Types:', chartertypes);
-
-    const SubCategoryType = await Subcategory.find({
-      section:section,
-      departure: departure,
-      arrival: arrival,
-      date: date,
-      pax: pax,
+    // Search for subcategories matching the search criteria
+    const subcategories = await Subcategory.find({
+      section,
+      // Other filters here if needed
+    }).populate({
+      path: 'flightDetails',
+      match: {
+        departure,
+        arrival,
+        date,
+        pax,
+      },
+      select: 'departure arrival date pax' // Adjust fields based on what you need
     });
 
-    // console.log(SubCategoryType);
-    if (SubCategoryType.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "Sorry, there are no flights for the given search" });
+    // Filter out subcategories that don't have any matching flight details
+    const filteredSubcategories = subcategories.filter(subcat => subcat.flightDetails.length > 0);
+
+    if (filteredSubcategories.length === 0) {
+      return res.status(400).json({ message: "Sorry, there are no flights for the given search" });
     }
-    res
-      .status(200)
-      .json({ message: "Data Searched Successfully", data: SubCategoryType });
+
+    res.status(200).json({
+      message: "Data Searched Successfully",
+      data: filteredSubcategories
+    });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -675,37 +716,66 @@ exports.filterByType = async (req, res) => {
 };
 
 
-/** 
+/**
  * Type Editing
  */
 exports.editTypeById = async (req, res) => {
   try {
     const id = req.params.id;
-    const {  section, active } = req.body;
+    const { section, active } = req.body;
 
-    if (!section || !active) {
+    // Validate input
+    if (!section || active === undefined) {
       return res.status(400).json({ message: "Fields to update are missing" });
     }
 
+    // Fetch the pre-update Type data
+    const preData = await Type.findById(id);
+    if (!preData) {
+      return res.status(404).json({ message: "Type not found" });
+    }
+
+    console.log("Pre-update section:", preData.section); // Debugging log
+
+    // Update Type document
     const updatedType = await Type.findByIdAndUpdate(
       id,
-      { section , active},
+      { section, active },
       { new: true }
     );
 
     if (!updatedType) {
-      return res.status(404).json({ message: "Error in updating data" });
+      return res.status(404).json({ message: "Error in updating Type data" });
     }
-    return res
-      .status(200)
-      .json({ message: "Data updated successfully", data:updatedType });
+
+    // Update all related documents in Categorymodify where section matches the old section
+    const updatedCategories = await Categorymodify.updateMany(
+      { section: preData.section.trim() }, // Ensure matching with the previous section
+      { $set: { section: section.trim() } } // Set the new section value
+    );
+
+    
+    // Update all related documents in Subcategory where section matches the old section
+    const updatedSubcategories = await Subcategory.updateMany(
+      { section: preData.section.trim() }, // Ensure matching with the previous section
+      { $set: { section: section.trim() } } // Set the new section value
+    );
+
+  
+
+    return res.status(200).json({
+      message: "Data updated successfully",
+      data: {
+        updatedType,
+        updatedCategories: updatedCategories.modifiedCount,
+        updatedSubcategories: updatedSubcategories.modifiedCount
+      }
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
   }
 };
-
-
 
 
 
