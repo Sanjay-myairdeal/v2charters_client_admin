@@ -1,9 +1,7 @@
 const express = require('express');
-
 const app = express();
 const dbConnect = require('./server/models/dbConnect');
 const port = 8000;
-// const expressLayouts = require('express-ejs-layouts');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const cors = require('cors');
@@ -18,13 +16,7 @@ app.use(express.json());
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// View Engine
-// app.use(expressLayouts);
-// app.set('view engine', 'ejs');
-// app.set('views', './views');
-
-// Suhail Edit
-
+// Components
 let components = ['NavHeroBar', 'ShowEstimates', 'OurServices', 'AboutFlight', 'LearnMore', 'OurFleets', 'PushSearchRes', 'Testimonials'];
 
 app.get('/api/components', (req, res) => {
@@ -36,16 +28,33 @@ app.post('/api/components', (req, res) => {
   res.json({ message: 'Components updated successfully' });
 });
 
-// Suhail Edit ends
-
 // Routes
-const adminRoutes = require('./server/adminRoutes/adminRoutes');
-app.use('/api/admin', adminRoutes);
+const bookingRoutes = require('./server/adminRoutes/bookingRoutes');
+const categoryRoutes = require('./server/adminRoutes/categoryRoutes');
+const loginRoutes = require('./server/adminRoutes/loginRoutes');
+const logsRoutes = require('./server/adminRoutes/logsRoutes');
+const onDemandRoutes = require('./server/adminRoutes/onDemanRoute'); // Corrected here
+const subCategoryRoutes = require('./server/adminRoutes/subCategoryRoutes');
+const enquiryRoutes = require('./server/adminRoutes/enquiryRoutes');
+const filterRoutes = require('./server/adminRoutes/filterRoutes');
+const typeRoutes = require('./server/adminRoutes/typeRoutes');
+
+
+app.use('/api/v2/admin/types', typeRoutes);
+app.use('/api/v2/admin/filter', filterRoutes);
+app.use('/api/v2/admin/bookings', bookingRoutes);
+app.use('/api/v2/admin/categories', categoryRoutes);
+app.use('/api/v2/admin/auth', loginRoutes);
+app.use('/api/v2/admin/logs', logsRoutes);
+app.use('/api/v2/admin/demand', onDemandRoutes);
+app.use('/api/v2/admin/subcategories', subCategoryRoutes);
+app.use('/api/v2/admin/enquiry', enquiryRoutes);
+
 
 // Database Connection
 dbConnect();
 
 // Server
 app.listen(port, () => {
-  console.log(`Server is running at ${port}`);
+  console.log(`Server is running at http://localhost:${port}`);
 });
