@@ -28,7 +28,7 @@ const upload = multer({ storage });
 
 router.get("/modifycategory", categoryController.getModifyCategories);
 router.post("/addmodifycategory", upload.single("image"), categoryController.addModifyCategories);
-router.post("/editmodifycharterbyid/:id", upload.single("image"), categoryController.editModifyCharterById);
+router.put("/editmodifycharterbyid/:id", upload.single("image"), categoryController.editModifyCharterById);
 router.delete("/deletemodifycharterbyid/:id", categoryController.deleteModifyCharterById);
 
 module.exports = router;

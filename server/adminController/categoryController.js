@@ -1,7 +1,17 @@
 const Categorymodify = require("../models/Categorymodify");
 const Subcategory = require("../models/Subcategory");
-const cloudinary=require("../cloudinary/cloudinary")
-const FlightDetails=require('../models/FlightDetails')
+const cloudinary = require("cloudinary").v2;
+
+/**
+ *  Cloudinary configuration
+ */
+cloudinary.config({
+  cloud_name: "dybrajkta",
+  api_key: "921983243972892",
+  api_secret: "c4n72FykTGrxsKpDzpADvNsqf5U",
+});
+
+
 /**
  * Modify Category Data
  */
@@ -23,51 +33,113 @@ exports.getModifyCategories = async (req, res) => {
    */
   exports.addModifyCategories = async (req, res) => {
     try {
-      const { chartertype, description, section } = req.body;
-      // console.log(chartertype, description);
-      // Validate required fields
-      if (!chartertype || !description || !section) {
-        return res.status(400).json({ message: "Missing fields" });
+      const {
+        chartertype,
+        description,
+        section,
+        categoryName,
+        aircraftType,
+        baggage,
+        speed,
+        seats,
+        yom,
+        pilots,
+        crew,
+        flyingRange,
+        cabinHeight,
+        cabinWidth,
+        lavatory,
+        yor,
+        withoutICU,
+        withICU,
+        paramedics,
+        techStops,
+      } = req.body;
+  
+      // Check if an image file is provided
+      if (!req.file) {
+        return res.status(400).json({ message: "Image file is required" });
       }
   
-      const image = req.file ? req.file.path : null;
-  
-      if (!image) {
-         return res.status(400).json({ message: "Image file is required" });
-      }
+      const imagePath = req.file.path;
   
       // Upload image to Cloudinary
-      const result = await cloudinary.uploader.upload(image);
+      const result = await cloudinary.uploader.upload(imagePath);
   
-      // Create new category modification
+      // Create new category modification document
       const newModify = new Categorymodify({
         chartertype,
         description,
-        image: result.secure_url,
         section,
+        categoryName,
+        aircraftType,
+        baggage,
+        speed,
+        seats,
+        yom,
+        pilots,
+        crew,
+        flyingRange,
+        cabinHeight,
+        cabinWidth,
+        lavatory,
+        yor,
+        withoutICU,
+        withICU,
+        paramedics,
+        techStops,
+        image: result.secure_url, // Store Cloudinary URL in the image field
       });
   
-      // Save to database
-      await newModify.save();
-      return res.status(200).json({ message: "Data inserted successfully" });
+      // Save the new document to the database
+      const savedCategory = await newModify.save();
+  
+      // Respond with success and return the saved document
+      return res.status(200).json({
+        message: "Data inserted successfully",
+        category: savedCategory,
+      });
     } catch (error) {
       console.error("Error adding category:", error);
+  
+      // Return server error response
       return res.status(500).json({ message: "Server error" });
     }
   };
+  
   /**
    * Edit Category by ID
    */
   exports.editModifyCharterById = async (req, res) => {
     try {
       const id = req.params.id;
-      const { chartertype, description, section } = req.body;
+      const {
+        chartertype,
+        description,
+        section,
+        categoryName,
+        aircraftType,
+        baggage,
+        speed,
+        seats,
+        yom,
+        pilots,
+        crew,
+        flyingRange,
+        cabinHeight,
+        cabinWidth,
+        lavatory,
+        yor,
+        withoutICU,
+        withICU,
+        paramedics,
+        techStops,
+      } = req.body;
   
-      // Check if ID or any fields to update are missing
-      if (!id || (!chartertype && !description && !req.file && !section)) {
-        return res
-          .status(400)
-          .json({ message: "ID or fields to update are missing" });
+      // Fetch the existing category before updating (to retrieve the current image)
+      const preData = await Categorymodify.findById(id);
+      if (!preData) {
+        return res.status(404).json({ message: "Category not found" });
       }
   
       let image;
@@ -78,19 +150,36 @@ exports.getModifyCategories = async (req, res) => {
         const result = await cloudinary.uploader.upload(req.file.path);
         image = result.secure_url;
       } else {
-        image = req.body.image; // If no new file, use the existing image
-      }
-  
-      // Find the original category before the update (for comparison)
-      const preData = await Categorymodify.findById(id);
-      if (!preData) {
-        return res.status(404).json({ message: "Category not found" });
+        // Use the existing image if no new image file is provided
+        image = req.body.image || preData.image;
       }
   
       // Update the main Categorymodify document
       const updatedCategory = await Categorymodify.findByIdAndUpdate(
         id,
-        { chartertype, description, image, section },
+        {
+          chartertype,
+          description,
+          section,
+          categoryName,
+          aircraftType,
+          baggage,
+          speed,
+          seats,
+          yom,
+          pilots,
+          crew,
+          flyingRange,
+          cabinHeight,
+          cabinWidth,
+          lavatory,
+          yor,
+          withoutICU,
+          withICU,
+          paramedics,
+          techStops,
+          image, // Ensuring we are keeping the original image if no new one is provided
+        },
         { new: true }
       );
   
@@ -103,11 +192,13 @@ exports.getModifyCategories = async (req, res) => {
       const updatedSubcategories = await Subcategory.updateMany(
         {
           chartertype: preData.chartertype, // Match pre-update chartertype
-          section: preData.section // Match pre-update section
+          section: preData.section, // Match pre-update section
+          categoryName: preData.categoryName,
         },
         {
           chartertype: updatedCategory.chartertype, // Update to the new chartertype
-          section: updatedCategory.section // Update to the new section
+          section: updatedCategory.section, // Update to the new section
+          categoryName: updatedCategory.categoryName,
         }
       );
   
@@ -115,13 +206,14 @@ exports.getModifyCategories = async (req, res) => {
       return res.status(200).json({
         message: "Data updated successfully",
         updatedCategory,
-        updatedSubcategories: updatedSubcategories.modifiedCount // Show how many subcategories were updated
+        updatedSubcategories: updatedSubcategories.modifiedCount, // Show how many subcategories were updated
       });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Server error" });
     }
   };
+  
   
   
   
@@ -144,7 +236,8 @@ exports.getModifyCategories = async (req, res) => {
       }
   
       // Delete all Subcategory documents related to the chartertype of the fetched Categorymodify document
-      await Subcategory.deleteMany({ chartertype: category.chartertype });
+      await Subcategory.deleteMany({ 
+        chartertype: category.chartertype });
   
       // Delete the Categorymodify document
       await Categorymodify.findByIdAndDelete(id);

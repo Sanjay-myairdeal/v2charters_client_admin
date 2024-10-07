@@ -1,5 +1,3 @@
-
-const FlightDetails=require('../models/FlightDetails')
 const Subcategory=require('../models/Subcategory')
 /**
  * On Demand Search Api

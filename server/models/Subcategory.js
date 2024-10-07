@@ -165,140 +165,88 @@
 
 // module.exports = mongoose.model("Subcategory", SubcategorySchema);
 const mongoose = require("mongoose");
-const FlightDetailsSchema = require("./FlightDetails"); // Import the FlightDetails schema
-
 const SubcategorySchema = mongoose.Schema({
-  section: {
-    type: String,
-    required: true,
+  from:{
+    type:String
   },
-  chartertype: {
-    type: String,
-    required: true,
+  section:{
+    type:String
   },
-  subCategoryName: {
-    type: String,
-    required: true,
+  to:{
+    type:String
   },
-  pax: {
-    type: String,
-    required: true,
+  chartertype:{
+    type:String
   },
-  speed: {
-    type: String,
-    required: true,
+  categoryName:{
+    type:String
   },
-  price: {
-    type: String,
-    required: true,
+  subCategoryName:{
+    type:String
   },
-  description: {
-    type: String,
-    required: true,
+  description:{
+    type:String
   },
-  image: {
-    type: String,
-    required: "This file is required.",
+  date:{
+    type:String
   },
-  availability: {
-    type: String,
-    enum: ['yes', 'no'],
-    required: true,
-    default: "no",
+  pax:{
+    type:String
   },
-  bookingtype: {
-    type: String,
-    required: true,
+  availability:{
+    type:String
   },
-  yom: { // Year of Manufacture
-    type: String,
-    required: true,
+  addedBy:{
+    type:String
   },
-  seats: {
-    type: Number,
-    required: true,
+  price:{
+    type:String
   },
-  crew: {
-    type: Number,
-    required: true,
+  airhosts:{
+    type:String
   },
-  baggage: {
-    type: String,
-    required: true,
+  fromtime:{
+    type:String
   },
-  airhosts: {
-    type: String,
-    required: true,
+  endtime:{
+    type:String
   },
-  levatory: { // Whether there is a restroom available
-    type: String,
-    enum: ['yes', 'no'],
-    required: true,
+  discount:{
+    type:String
   },
-  cabinheight: {
-    type: String,
-    required: true,
+  discountprice:{
+    type:String
   },
-  cabinwidth: {
-    type: String,
-    required: true,
+  duration:{
+    type:String
   },
-  flyingrange: {
-    type: String,
-    required: true,
+  reachdate:{
+    type:String
   },
-  cabinlength: {
-    type: String,
-    required: true,
+  targetprice:{
+    type:String
   },
-  pilot: {
-    type: String,
-    required: true,
+  brokercompany:{
+    type:String
   },
-  discount: {
-    type: Number,
-    required: true,
+  brokerName:{
+    type:String
   },
-  discountprice: {
-    type: Number,
-    required: true,
+  brokerEmail:{
+    type:String
   },
-  duration: {
-    type: String,
-    required: true,
+  brokerPhone:{
+    type:String
   },
-  yor: { // Year of Refurbishment
-    type: String,
-    required: true,
+  operatoremail:{
+    type:String
   },
-  targetprice: {
-    type: Number,
-    required: true,
+  operatorname:{
+    type:String
   },
-  brokercompany: {
-    type: String,
-    required: true,
-  },
-  flexibility: {
-    type: String,
-    required: true,
-  },
-  operatorname: {
-    type: String,
-    required: true,
-  },
-  operatoremail: {
-    type: String,
-    required: true,
-  },
-  operatorphone: {
-    type: String,
-    required: true,
-  },
-  flightDetails: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "FlightDetails", // Reference the FlightDetails schema
-  }]
+  operatorphone:{
+    type:String
+  }
 });
 
 module.exports = mongoose.model("Subcategory", SubcategorySchema);

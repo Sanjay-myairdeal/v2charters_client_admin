@@ -1,11 +1,11 @@
+const Categorymodify=require('../models/Categorymodify')
+const SubCategory=require('../models/Subcategory')
 /**
  * Filter flights by type and category
  */
 exports.filterByTypeAndCategory = async (req, res) => {
     try {
       const { section, chartertype } = req.params;
-  console.log(section)
-  console.log(chartertype)
       // Check if required parameters are present
       if (!section) {
         return res.status(400).json({ message: "'section' parameter is missing." });
@@ -15,7 +15,7 @@ exports.filterByTypeAndCategory = async (req, res) => {
       }
   
       // Query to find the data
-      const data = await Subcategory.find({ section, chartertype });
+      const data = await SubCategory.find({ section, chartertype });
   
       // Check if data is found
       if (data.length === 0) {
@@ -44,10 +44,10 @@ exports.filterByTypeAndCategory = async (req, res) => {
     try {
       const category = req.params.chartertype;
       // console.log(type);
-      if (!type) {
+      if (!category) {
         return res.status(404).json({ message: "Charter type is missing" });
       }
-      const filldata = await Subcategory.find({ chartertype: type });
+      const filldata = await SubCategory.find({ chartertype: category });
       if (filldata.length === 0) {
         return res.status(400).json({
           message: "No such subcategory exists for the given charter type",
@@ -89,8 +89,6 @@ exports.filterByTypeAndCategory = async (req, res) => {
   };
   
   
-
-  
 /**
  * Api for the Subcatgeorie of Type
  */
@@ -106,12 +104,8 @@ exports.filterSubCategoryByType = async (req, res) => {
       return res.status(400).json({ message: "'type' parameter is missing." });
     }
 
-
-
     // Fetch subcategories by type
-    const filteredSubCategory = await Subcategory.find({ section:type });
-
- 
+    const filteredSubCategory = await SubCategory.find({ section:type });
 
     // Check if any subcategories were found
     if (filteredSubCategory.length === 0) {

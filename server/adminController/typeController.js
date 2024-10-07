@@ -2,7 +2,7 @@ const Categorymodify = require("../models/Categorymodify");
 const Subcategory = require("../models/Subcategory");
 const Type = require("../models/Type");
 const cloudinary=require("../cloudinary/cloudinary")
-const FlightDetails=require('../models/FlightDetails')
+
 /**
  * Type Section Starts
  */

@@ -1,6 +1,6 @@
 const Subcategory = require("../models/Subcategory");
 const cloudinary=require("../cloudinary/cloudinary");
-const FlightDetails=require('../models/FlightDetails')
+
 /**
  * Get Sub Category Data
  */
@@ -24,171 +24,82 @@ exports.getSubCategories = async (req, res) => {
   exports.addSubCategories = async (req, res) => {
     try {
       const {
+        from,
         section,
+        to,
         chartertype,
+        categoryName,
         subCategoryName,
-        pax,
-        speed,
-        price,
         description,
-        availability,
-        bookingtype,
-        yom,
-        seats,
-        crew,
-        baggage,
-        airhosts,
-        levatory,
-        cabinheight,
-        cabinwidth,
-        flyingrange,
-        cabinlength,
-        pilot,
-        discount,
-        duration,
-        yor,
-        targetprice,
-        brokercompany,
-        flexibility,
-        operatorname,
-        operatoremail,
-        operatorphone,
-        departure,
-        arrival,
-        journeytype,
         date,
+        pax,
+        availability,
+        addedBy,
+        price,
+        airhosts,
         fromtime,
         endtime,
-        reachdate
+        discount,
+        discountprice,
+        duration,
+        reachdate,
+        targetprice,
+        brokercompany,
+        brokerName,
+        brokerEmail,
+        brokerPhone,
+        operatoremail,
+        operatorname,
+        operatorphone,
       } = req.body;
-  
-      // Validate required fields
-      if (
-        !section ||
-        !chartertype ||
-        !subCategoryName ||
-        !pax ||
-        !speed ||
-        !price ||
-        !availability ||
-        !description ||
-        !bookingtype ||
-        !yom ||
-        !seats ||
-        !crew ||
-        !baggage ||
-        !airhosts ||
-        !levatory ||
-        !cabinheight ||
-        !cabinwidth ||
-        !flyingrange ||
-        !cabinlength ||
-        !pilot ||
-        !discount ||
-        !duration ||
-        !yor ||
-        !targetprice ||
-        !brokercompany ||
-        !flexibility ||
-        !operatorname ||
-        !operatoremail ||
-        !operatorphone ||
-        !departure ||
-        !arrival ||
-        !journeytype ||
-        !date ||
-        !fromtime ||
-        !endtime ||
-        !reachdate
-      ) {
-        return res.status(400).json({ message: "All fields are required" });
-      }
-  
+
       const image = req.file ? req.file.path : null;
       const caldiscount = (discount / 100) * price;
-  
+
       if (!image) {
         return res.status(400).json({ message: "Image file is required" });
       }
-  
+
       // Upload image to Cloudinary
       const result = await cloudinary.uploader.upload(image);
-  
+
       // Create flight details object
-      const flightDetails = new FlightDetails({
+      const flightDetails = new Subcategory({
+        from,
         section,
-        departure,
-        arrival,
-        journeytype,
+        to,
+        chartertype,
+        categoryName,
+        subCategoryName,
+        description,
         date,
+        pax,
+        availability,
+        addedBy,
+        price,
+        airhosts,
         fromtime,
         endtime,
+        discount,
+        discountprice,
+        duration,
         reachdate,
-        pax,
-        chartertype
+        targetprice,
+        brokercompany,
+        brokerName,
+        brokerEmail,
+        brokerPhone,
+        operatoremail,
+        operatorname,
+        operatorphone,
       });
-  
+
       // Save flight details to the database
       await flightDetails.save();
-  
-      // Check if subcategory exists
-      let subcategory = await Subcategory.findOne({
-        section,
-        chartertype
-      });
-  
-      if (subcategory) {
-        // Subcategory exists, add flight details to the existing subcategory
-        subcategory.flightDetails.push(flightDetails._id);
-        await subcategory.save();
-        return res.status(200).json({
-          message: "Flight details added to existing subcategory",
-          addedData: subcategory
-        });
-      } else {
-        // Subcategory does not exist, create a new one
-        subcategory = new Subcategory({
-          section,
-          chartertype,
-          subCategoryName,
-          pax,
-          speed,
-          price,
-          description,
-          availability,
-          bookingtype,
-          image: result.secure_url,
-          yom,
-          seats,
-          crew,
-          baggage,
-          airhosts,
-          levatory,
-          cabinheight,
-          cabinwidth,
-          flyingrange,
-          cabinlength,
-          pilot,
-          discount,
-          discountprice: caldiscount,
-          duration,
-          yor,
-          targetprice,
-          brokercompany,
-          flexibility,
-          operatorname,
-          operatoremail,
-          operatorphone,
-          flightDetails: [flightDetails._id] // Reference to flight details
-        });
-  
-        // Save subcategory to the database
-        await subcategory.save();
-        return res.status(201).json({
-          message: "New subcategory created with flight details",
-          addedData: subcategory
-        });
-      }
+
+      return res
+        .status(200)
+        .json({ message: "Subcategory data Inserted ", data: flightDetails });
     } catch (error) {
       console.error("Error adding subcategory:", error);
       return res.status(500).json({ message: "Server error" });
@@ -207,86 +118,37 @@ exports.getSubCategories = async (req, res) => {
         return res.status(404).json({ message: "Id is missing" });
       }
       const {
+        from,
         section,
+        to,
         chartertype,
+        categoryName,
         subCategoryName,
-        pax,
-        speed,
-        price,
         description,
-        availability,
-        bookingtype,
-        departure,
-        arrival,
-        journeytype,
         date,
-        yom,
-        seats,
-        crew,
-        baggage,
+        pax,
+        availability,
+        addedBy,
+        price,
         airhosts,
-        levatory,
         fromtime,
         endtime,
-        cabinheight,
-        cabinwidth,
-        flyingrange,
-        cabinlength,
-        pilot,
         discount,
-        reachdate,
+        discountprice,
         duration,
-        yor,
+        reachdate,
         targetprice,
         brokercompany,
-        flexibility,
-        operatorname,
+        brokerName,
+        brokerEmail,
+        brokerPhone,
         operatoremail,
-        operatorphone
+        operatorname,
+        operatorphone,
       } = req.body;
-      if (
-        !section ||
-        !chartertype ||
-        !subCategoryName ||
-        !pax ||
-        !speed ||
-        !price ||
-        !availability ||
-        !description ||
-        !bookingtype ||
-        !departure ||
-        !arrival ||
-        !journeytype ||
-        !date ||
-        !yom ||
-        !seats ||
-        !crew ||
-        !baggage ||
-        !airhosts ||
-        !levatory ||
-        !fromtime ||
-        !endtime ||
-        !cabinheight ||
-        !cabinwidth ||
-        !flyingrange ||
-        !cabinlength ||
-        !pilot ||
-        !discount ||
-        !reachdate ||
-        !duration ||
-        !yor ||
-        !targetprice ||
-        !brokercompany ||
-        !flexibility ||
-        !operatoremail ||
-        !operatorname ||
-        !operatorphone
-      ) {
-        return res.status(400).json({ message: "Missing fields" });
-      }
-  
+
       let image;
-      const caldiscount=(discount/100)*price
+      const caldiscount = (discount / 100) * price;
       if (req.file) {
         // Upload the new image to Cloudinary
         const result = await cloudinary.uploader.upload(req.file.path);
@@ -294,56 +156,45 @@ exports.getSubCategories = async (req, res) => {
       } else {
         image = req.body.image;
       }
-  
+
       const updatedData = await Subcategory.findByIdAndUpdate(
         id,
         {
-          duration,
-          reachdate,
+          from,
+          to,
           section,
           chartertype,
+          categoryName,
           subCategoryName,
-          pax,
-          speed,
-          price,
           description,
-          availability,
-          bookingtype,
-          departure,
-          arrival,
-          journeytype,
           date,
-          yom,
-          seats,
-          crew,
-          baggage,
+          pax,
+          availability,
+          addedBy,
+          price,
           airhosts,
-          levatory,
           fromtime,
           endtime,
-          cabinheight,
-          cabinwidth,
-          flyingrange,
-          image: image,
-          cabinlength,
-          pilot,
           discount,
-          caldiscount:caldiscount,
-          yor,
-        targetprice,
-        brokercompany,
-        flexibility,
-        operatorname,
-        operatoremail,
-        operatorphone
+          discountprice,
+          duration,
+          reachdate,
+          targetprice,
+          brokercompany,
+          brokerName,
+          brokerEmail,
+          brokerPhone,
+          operatoremail,
+          operatorname,
+          operatorphone,
         },
         { new: true }
       );
-  
+
       if (!updatedData) {
         return res.status(400).json({ message: "Error in updating the data" });
       }
-  
+
       return res
         .status(200)
         .json({ message: "Data updated successfully", updated: updatedData });

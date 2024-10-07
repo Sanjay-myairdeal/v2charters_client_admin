@@ -5,7 +5,7 @@ const filterController = require('../adminController/filter');
 /**
  * Filter Category Data
  */
-router.get("/filter/:chartertype", filterController.getsubCategorybyCategory);
+router.get("/:chartertype", filterController.getsubCategorybyCategory);
 router.get('/categorybytype/:type', filterController.filterByType);
 
 /**

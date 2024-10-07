@@ -1,31 +1,81 @@
 const mongoose = require("mongoose");
 const Subcategory = require("./Subcategory");
-const categorymodifySchema = new mongoose.Schema({
+
+const categoryModifySchema = new mongoose.Schema({
   section: {
     type: String,
-    required: true,
   },
   chartertype: {
     type: String,
-    required: true,
   },
   description: {
     type: String,
-    required: true,
   },
   image: {
     type: String,
     required: "This file is required.",
   },
+  categoryName: {
+    type: String,
+  },
+  aircraftType: {
+    type: String,
+  },
+  baggage: {
+    type: String,
+  },
+  speed: {
+    type: String,
+  },
+  seats: {
+    type: String,
+  },
+  yom: {
+    type: String, // Year of manufacture
+  },
+  pilots: {
+    type: String,
+  },
+  crew: {
+    type: String,
+  },
+  flyingRange: {
+    type: String,
+  },
+  cabinHeight: {
+    type: String,
+  },
+  cabinWidth: {
+    type: String,
+  },
+  lavatory: {
+    type: String,
+  },
+  yor: {
+    type: String, // Year of refurbishment
+  },
+  withoutICU: {
+    type: String,
+  },
+  withICU: {
+    type: String,
+  },
+  paramedics: {
+    type: String,
+  },
+  techStops: {
+    type: String
+  },
+  
 });
 
-
-categorymodifySchema.pre('remove',async(req,res,next)=>{
+categoryModifySchema.pre("remove", async function (next) {
   try {
-    await Subcategory.deleteMany({chartertype: this.chartertype});
+    await Subcategory.deleteMany({ charterType: this.charterType });
     next();
   } catch (error) {
-    next(error)
+    next(error);
   }
-})
-module.exports = mongoose.model("Categorymodify", categorymodifySchema);
+});
+
+module.exports = mongoose.model("CategoryModify", categoryModifySchema);
