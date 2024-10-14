@@ -11,8 +11,8 @@ router.get('/categorybytype/:type', filterController.filterByType);
 /**
  * Filter data based on Type and Category
  */
-router.post('/filterbytypeandcategory/:section/:chartertype', filterController.filterByTypeAndCategory);
+router.get('/filterbytypeandcategory/:section/:chartertype', filterController.filterByTypeAndCategory);
 
-router.post('/filterSubCategoryByType/:type', filterController.filterSubCategoryByType);
+router.get('/filterSubCategoryByType/:type', filterController.filterSubCategoryByType);
 
 module.exports = router;

@@ -1,6 +1,14 @@
 const Subcategory = require("../models/Subcategory");
-const cloudinary=require("../cloudinary/cloudinary");
+const cloudinary = require("cloudinary").v2;
 
+/**
+ *  Cloudinary configuration
+ */
+cloudinary.config({
+  cloud_name: "dybrajkta",
+  api_key: "921983243972892",
+  api_secret: "c4n72FykTGrxsKpDzpADvNsqf5U",
+});
 /**
  * Get Sub Category Data
  */
@@ -92,6 +100,7 @@ exports.getSubCategories = async (req, res) => {
         operatoremail,
         operatorname,
         operatorphone,
+        image:result.secure_url
       });
 
       // Save flight details to the database

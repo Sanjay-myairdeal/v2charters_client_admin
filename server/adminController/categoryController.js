@@ -112,111 +112,108 @@ exports.getModifyCategories = async (req, res) => {
    */
   exports.editModifyCharterById = async (req, res) => {
     try {
-      const id = req.params.id;
-      const {
-        chartertype,
-        description,
-        section,
-        categoryName,
-        aircraftType,
-        baggage,
-        speed,
-        seats,
-        yom,
-        pilots,
-        crew,
-        flyingRange,
-        cabinHeight,
-        cabinWidth,
-        lavatory,
-        yor,
-        withoutICU,
-        withICU,
-        paramedics,
-        techStops,
-      } = req.body;
-  
-      // Fetch the existing category before updating (to retrieve the current image)
-      const preData = await Categorymodify.findById(id);
-      if (!preData) {
-        return res.status(404).json({ message: "Category not found" });
-      }
-  
-      let image;
-  
-      // Handle image upload if a new file is provided
-      if (req.file) {
-        // Upload the new image to Cloudinary
-        const result = await cloudinary.uploader.upload(req.file.path);
-        image = result.secure_url;
-      } else {
-        // Use the existing image if no new image file is provided
-        image = req.body.image || preData.image;
-      }
-  
-      // Update the main Categorymodify document
-      const updatedCategory = await Categorymodify.findByIdAndUpdate(
-        id,
-        {
-          chartertype,
-          description,
-          section,
-          categoryName,
-          aircraftType,
-          baggage,
-          speed,
-          seats,
-          yom,
-          pilots,
-          crew,
-          flyingRange,
-          cabinHeight,
-          cabinWidth,
-          lavatory,
-          yor,
-          withoutICU,
-          withICU,
-          paramedics,
-          techStops,
-          image, // Ensuring we are keeping the original image if no new one is provided
-        },
-        { new: true }
-      );
-  
-      // Check if the update was successful
-      if (!updatedCategory) {
-        return res.status(404).json({ message: "Error in updating data" });
-      }
-  
-      // Update all Subcategory documents where the chartertype and section are the same as the pre-update data
-      const updatedSubcategories = await Subcategory.updateMany(
-        {
-          chartertype: preData.chartertype, // Match pre-update chartertype
-          section: preData.section, // Match pre-update section
-          categoryName: preData.categoryName,
-        },
-        {
-          chartertype: updatedCategory.chartertype, // Update to the new chartertype
-          section: updatedCategory.section, // Update to the new section
-          categoryName: updatedCategory.categoryName,
+        const id = req.params.id;
+        const {
+            chartertype,
+            description,
+            section,
+            categoryName,
+            aircraftType,
+            baggage,
+            speed,
+            seats,
+            yom,
+            pilots,
+            crew,
+            flyingRange,
+            cabinHeight,
+            cabinWidth,
+            lavatory,
+            yor,
+            withoutICU,
+            withICU,
+            paramedics,
+            techStops,
+        } = req.body;
+
+        // Fetch the existing category before updating (to retrieve the current image)
+        const preData = await Categorymodify.findById(id);
+        if (!preData) {
+            return res.status(404).json({ message: "Category not found" });
         }
-      );
-  
-      // Respond with a success message and the updated category
-      return res.status(200).json({
-        message: "Data updated successfully",
-        updatedCategory,
-        updatedSubcategories: updatedSubcategories.modifiedCount, // Show how many subcategories were updated
-      });
+
+        let image;
+
+        // Handle image upload if a new file is provided
+        if (req.file) {
+            // Upload the new image to Cloudinary
+            const result = await cloudinary.uploader.upload(req.file.path);
+            image = result.secure_url;
+        } else {
+            // Use the existing image if no new image file is provided
+            image = req.body.image || preData.image;
+        }
+
+        // Update the main Categorymodify document
+        const updatedCategory = await Categorymodify.findByIdAndUpdate(
+            id,
+            {
+                chartertype,
+                description,
+                section,
+                categoryName,
+                aircraftType,
+                baggage,
+                speed,
+                seats,
+                yom,
+                pilots,
+                crew,
+                flyingRange,
+                cabinHeight,
+                cabinWidth,
+                lavatory,
+                yor,
+                withoutICU,
+                withICU,
+                paramedics,
+                techStops,
+                image, // Ensuring we are keeping the original image if no new one is provided
+            },
+            { new: true }
+        );
+
+        // Check if the update was successful
+        if (!updatedCategory) {
+            return res.status(404).json({ message: "Error in updating data" });
+        }
+
+        // Now update all Subcategory documents where the chartertype, section, and categoryName are the same as the pre-update data
+        const updatedSubcategories = await Subcategory.updateMany(
+            {
+                chartertype: preData.chartertype, // Match pre-update chartertype
+                section: preData.section, // Match pre-update section
+        
+            },
+            {
+                chartertype: updatedCategory.chartertype, // Update to the new chartertype
+                section: updatedCategory.section, // Update to the new section
+                
+            }
+        );
+
+        // Respond with a success message and the updated category
+        return res.status(200).json({
+            message: "Data updated successfully",
+            updatedCategory,
+            updatedSubcategories: updatedSubcategories.modifiedCount, // Show how many subcategories were updated
+        });
     } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Server error" });
+        console.error(error);
+        return res.status(500).json({ message: "Server error" });
     }
-  };
-  
-  
-  
-  
+};
+
   /**
    * Delete Category Data
    */

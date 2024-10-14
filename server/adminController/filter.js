@@ -3,39 +3,31 @@ const SubCategory=require('../models/Subcategory')
 /**
  * Filter flights by type and category
  */
+
 exports.filterByTypeAndCategory = async (req, res) => {
-    try {
+  try {
       const { section, chartertype } = req.params;
-      // Check if required parameters are present
+      
       if (!section) {
-        return res.status(400).json({ message: "'section' parameter is missing." });
+          return res.status(400).json({ message: "'section' parameter is missing." });
       }
       if (!chartertype) {
-        return res.status(400).json({ message: "'chartertype' parameter is missing." });
+          return res.status(400).json({ message: "'chartertype' parameter is missing." });
       }
-  
-      // Query to find the data
+
       const data = await SubCategory.find({ section, chartertype });
-  
-      // Check if data is found
+      
       if (data.length === 0) {
-        return res.status(404).json({ message: `No subcategories found for section '${section}' and charter type '${chartertype}'.` });
+          return res.status(404).json({ message: `No subcategories found for section '${section}' and charter type '${chartertype}'.` });
       }
-  
-      // Return success response with data
-      return res.status(200).json({
-        message: "Subcategories fetched successfully.",
-        data,
-      });
-    } catch (error) {
+
+      return res.status(200).json({ message: "Subcategories fetched successfully.", data });
+  } catch (error) {
       console.error("Error fetching subcategories:", error.message);
-      return res.status(500).json({
-        message: "An error occurred while fetching subcategories.",
-        error: error.message,
-      });
-    }
-  };
-  
+      return res.status(500).json({ message: "An error occurred while fetching subcategories.", error: error.message });
+  }
+};
+
 
   /**
    * Filter the Data based upon the Category Type
