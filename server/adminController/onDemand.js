@@ -11,17 +11,16 @@ exports.onDemandSearch = async (req, res) => {
     if (!from || !to || !date || !pax || !section) {
       return res.status(400).json({ message: "Missing Fields" });
     }
-
+    const paxNumber = Number(pax);
     // Search for subcategories matching the search criteria with pax less than the given value
     const subcategories = await Subcategory.find({
       section,
       from,
       to,
       date,
-      pax: { $lte: pax },  // Pax less than the provided value
-      // Additional filters can be added here
+      pax: { $lte: paxNumber },
     });
-
+    //  console.log("pax given by user",pax)
     // Check if results were found
     if (!subcategories || subcategories.length === 0) {
       return res.status(404).json({ message: "No Flights matching the given requirements" });

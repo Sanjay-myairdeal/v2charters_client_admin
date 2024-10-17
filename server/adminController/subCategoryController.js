@@ -89,7 +89,7 @@ exports.getSubCategories = async (req, res) => {
         fromtime,
         endtime,
         discount,
-        discountprice,
+        discountprice:caldiscount,
         duration,
         reachdate,
         targetprice,
