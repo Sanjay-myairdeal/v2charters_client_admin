@@ -21,7 +21,7 @@ let components = ['NavHeroBar', 'ShowEstimates', 'OurServices', 'AboutFlight', '
 
 app.get('/api/components', (req, res) => {
   res.json(components);
-});
+}); 
 
 app.post('/api/components', (req, res) => {
   components = req.body;
@@ -38,6 +38,8 @@ const subCategoryRoutes = require('./server/adminRoutes/subCategoryRoutes');
 const enquiryRoutes = require('./server/adminRoutes/enquiryRoutes');
 const filterRoutes = require('./server/adminRoutes/filterRoutes');
 const typeRoutes = require('./server/adminRoutes/typeRoutes');
+const userRole=require('./server/adminRoutes/userRoleRoutes');
+const viewRoutes=require('./server/adminRoutes/viewRoutes')
 
 
 app.use('/api/v2/admin/types', typeRoutes);
@@ -49,6 +51,8 @@ app.use('/api/v2/admin/logs', logsRoutes);
 app.use('/api/v2/admin/demand', onDemandRoutes);
 app.use('/api/v2/admin/subcategories', subCategoryRoutes);
 app.use('/api/v2/admin/enquiry', enquiryRoutes);
+app.use('/api/v2/admin/userroles',userRole);
+app.use('/api/v2/admin/view',viewRoutes);
 
 
 // Database Connection

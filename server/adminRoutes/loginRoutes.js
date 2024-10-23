@@ -2,11 +2,11 @@ const express = require("express");
 const router = express.Router();
 const loginController = require('../adminController/loginController');
 
-router.post("/register", loginController.register);
+router.post("/createuser", loginController.createUser);
 router.post("/login", loginController.login);
-router.delete("/deleteadmin/:id", loginController.deleteAdmin);
-router.get("/getalladmins", loginController.getAllAdmins);
-router.put("/updateuserrolebyid/:id", loginController.editUserRole);
-router.get("/getadminbyid/:id", loginController.getAdminById);
+router.delete("/deleteuserbyid/:id", loginController.deleteUser);
+router.get("/getallusers", loginController.getAllUsers);
+router.put("/updateuserbyid/:id", loginController.editUser);
+router.get("/getuserbyid/:id", loginController.getUserById);
 
 module.exports = router;

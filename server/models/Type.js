@@ -9,7 +9,11 @@ const TypeSchema=mongoose.Schema({
    active:{
     type:String,
     required:true
-   }
+   },
+   addedBy:{
+      type: String,  // Reference to the UserRole object
+      required: true
+    }
 })
 
 TypeSchema.pre('remove',async(req,res,next)=>{

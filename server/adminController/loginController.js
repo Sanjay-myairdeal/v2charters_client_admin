@@ -1,15 +1,19 @@
 /**
- * User Roles ontrollers
+ * User Roles controllers
  */
 
 const admin = require("../models/admin.js");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
-
+const jwt=require('jsonwebtoken');
+const dotenv=require('dotenv');
+dotenv.config();
+const jwt_secret=process.env.JWT_SECRET
+console.log(jwt_secret)
 /**
  * Register a new admin
  */
-exports.register = async (req, res) => {
+exports.createUser = async (req, res) => {
   try {
     const { email, password, role ,name} = req.body;
 
@@ -25,7 +29,7 @@ exports.register = async (req, res) => {
     }
 
     // Check if the user already exists
-    const existed = await admin.findOne({ email });
+    const existed = await admin.findOne({ email,role });
     if (existed) {
       return res.status(409).json({ message: "User already exists" });
     }
@@ -80,16 +84,22 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "Password Not Matching" });
     }
 
-    // Validate role and name
-    if (role !== data.role ) {
-      return res.status(401).json({ message: "No user with particular role or name" });
+    // Validate role: compare ObjectIds
+    if (!mongoose.Types.ObjectId.isValid(role)) {
+      return res.status(400).json({ message: "Invalid Role ID format" });
+    }
+
+    if (!data.role.equals(role)) {
+      return res.status(401).json({ message: "No user with particular role or role mismatch" });
     }
 
     // Exclude password and __v from the response
     const loginData = await admin.findOne({ email }).select("-password -__v");
+    const token=jwt.sign({userId:loginData._id},jwt_secret,{expiresIn:"1h"})
 
     return res.status(200).json({
-      message: " Logged in Successfully",
+      message: "Logged in Successfully",
+      token,
       details: loginData,
     });
   } catch (error) {
@@ -101,7 +111,7 @@ exports.login = async (req, res) => {
 /**
  * Delete the Admin
  */
-exports.deleteAdmin = async (req, res) => {
+exports.deleteUser = async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -118,7 +128,7 @@ exports.deleteAdmin = async (req, res) => {
     // Check if the admin exists
     const data = await admin.findById(id);
     if (!data) {
-      return res.status(404).json({ message: "User not found with this ID" });
+      return res.status(404).json({ message: "User not found with this ID"});
     }
 
     // Delete the admin
@@ -133,7 +143,7 @@ exports.deleteAdmin = async (req, res) => {
 /**
  * Get All Admins
  */
-exports.getAllAdmins = async (req, res) => {
+exports.getAllUsers = async (req, res) => {
   try {
     // Fetch all admins and exclude password and __v
     const adminData = await admin.find({}).select("-password -__v");
@@ -159,7 +169,7 @@ exports.getAllAdmins = async (req, res) => {
  * Edit the User Role
  */
 
-exports.editUserRole = async (req, res) => {
+exports.editUser = async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -182,17 +192,17 @@ exports.editUserRole = async (req, res) => {
     // Hash the password before updating it
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const updatedData = await admin.findByIdAndUpdate(
+    // Update the user data
+    await admin.findByIdAndUpdate(
       id,
       { name, email, password: hashedPassword, role },
       { new: true }
     );
 
-    if (!updatedData) {
-      return res.status(400).json({ message: "Error updating the data" });
-    }
+    // Fetch the updated data again to exclude password and __v fields
+    const finalData = await admin.findById(id).select("-password -__v");
 
-    return res.status(200).json({ message: "Data updated successfully", data: updatedData });
+    return res.status(200).json({ message: "Data updated successfully", data: finalData });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server Error" });
@@ -203,7 +213,7 @@ exports.editUserRole = async (req, res) => {
 /**
  * Get admin by Id
  */
-exports.getAdminById = async (req, res) => {
+exports.getUserById = async (req, res) => {
   try {
     const id = req.params.id;
     if (!id) {

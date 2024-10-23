@@ -4,7 +4,8 @@ const subCategoryController = require('../adminController/subCategoryController'
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("cloudinary").v2;
-
+const {checkPermission}=require('../middleware/permissions')
+const {verifyToken}=require('../middleware/loginmiddleware')
 cloudinary.config({
   cloud_name: "dybrajkta",
   api_key: "921983243972892",
@@ -27,8 +28,8 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage });
 
 router.get("/getallsubcategories", subCategoryController.getSubCategories);
-router.post("/addsubcategory", upload.single("image"), subCategoryController.addSubCategories);
-router.post("/editmodifysubcharterbyid/:id", upload.single("image"), subCategoryController.editSubCategoryById);
-router.delete("/deletemodifysubcharterbyid/:id", subCategoryController.deleteModifySubCharterById);
+router.post("/addsubcategory",verifyToken,checkPermission('canAdd'), upload.single("image"), subCategoryController.addSubCategories);
+router.post("/editmodifysubcharterbyid/:id",verifyToken, checkPermission('canEdit'),upload.single("image"), subCategoryController.editSubCategoryById);
+router.delete("/deletemodifysubcharterbyid/:id",verifyToken,checkPermission('canDelete'), subCategoryController.deleteModifySubCharterById);
 
 module.exports = router;

@@ -66,7 +66,10 @@ const categoryModifySchema = new mongoose.Schema({
   techStops: {
     type: String
   },
-  
+  addedBy:{
+    type: String,  // Reference to the UserRole object
+    required: true
+  }
 });
 
 categoryModifySchema.pre("remove", async function (next) {

@@ -54,7 +54,8 @@ exports.addModifyCategories = async (req, res) => {
       paramedics,
       techStops,
     } = req.body;
-
+    // Extract the userId from the request object (set by verifyToken middleware)
+    const userId = req.userId; // This comes from the decoded JWT token
     // Check if an image file is provided
     if (!req.file) {
       return res.status(400).json({ message: "Image file is required" });
@@ -88,6 +89,7 @@ exports.addModifyCategories = async (req, res) => {
       paramedics,
       techStops,
       image: result.secure_url, // Store Cloudinary URL in the image field
+      addedBy:userId
     });
 
     // Save the new document to the database
@@ -143,7 +145,6 @@ exports.editModifyCharterById = async (req, res) => {
     }
     // console.log(preData)
     let image;
-
     // Handle image upload if a new file is provided
     if (req.file) {
       // Upload the new image to Cloudinary

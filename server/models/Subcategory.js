@@ -246,6 +246,10 @@ const SubcategorySchema = mongoose.Schema({
   },
   operatorphone:{
     type:String
+  },
+  addedBy:{
+    type: String,  // Reference to the UserRole object
+    required: true
   }
 });
 

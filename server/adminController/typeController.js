@@ -17,9 +17,11 @@ exports.sectionAdding = async (req, res) => {
       if (exist) {
         return res.status(400).json({ message: "Type already exists" });
       }
+      const userId = req.userId; 
       const addData = new Type({
         section,
         active,
+        addedBy:userId
       });
       await addData.save();
       res.status(201).json({ message: "Type added successfully", data: addData });

@@ -1,8 +1,6 @@
 const Enquiry=require('../models/Enquiry')
 const email_verifier = require("email-verifier-node");
-/**
- * Enquiry Controllers
- */
+
 
 /**
  * Enquiry Controllers

@@ -70,7 +70,7 @@ exports.getSubCategories = async (req, res) => {
 
       // Upload image to Cloudinary
       const result = await cloudinary.uploader.upload(image);
-
+      const userId = req.userId; 
       // Create flight details object
       const flightDetails = new Subcategory({
         from,
@@ -100,7 +100,8 @@ exports.getSubCategories = async (req, res) => {
         operatoremail,
         operatorname,
         operatorphone,
-        image:result.secure_url
+        image:result.secure_url,
+        addedBy:userId
       });
 
       // Save flight details to the database
