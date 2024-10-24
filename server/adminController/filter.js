@@ -15,7 +15,14 @@ exports.filterByTypeAndCategory = async (req, res) => {
           return res.status(400).json({ message: "'chartertype' parameter is missing." });
       }
 
-      const data = await SubCategory.find({ section, chartertype });
+      const data = await SubCategory.find({ section, chartertype }).populate({
+        path:'addedBy',
+        select:'-password -__v  -_id',
+        populate:{
+          path:'role',
+          select:'-permissions -__v '
+        }
+      });
       
       if (data.length === 0) {
           return res.status(404).json({ message: `No subcategories found for section '${section}' and charter type '${chartertype}'.` });
@@ -66,7 +73,14 @@ exports.filterByTypeAndCategory = async (req, res) => {
       if (!urlType) {
         res.status(404).json({ message: "params in the url is not Found" });
       }
-      const filteredCategory = await Categorymodify.find({ section: urlType });
+      const filteredCategory = await Categorymodify.find({ section: urlType }).populate({
+        path:'addedBy',
+        select:'-password -__v  -_id',
+        populate:{
+          path:'role',
+          select:'-permissions -__v '
+        }
+      });
       if (filteredCategory.length == 0) {
         return res.status(404).json({ message: "No Categories of specific type" });
       }

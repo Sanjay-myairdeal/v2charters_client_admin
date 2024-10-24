@@ -67,8 +67,9 @@ const categoryModifySchema = new mongoose.Schema({
     type: String
   },
   addedBy:{
-    type: String,  // Reference to the UserRole object
-    required: true
+    type: mongoose.Schema.Types.ObjectId,  // Reference to the UserRole object
+      ref: 'admin',  // Reference to the UserRole model
+      required: true
   }
 });
 

@@ -8,35 +8,54 @@ const cloudinary=require("../cloudinary/cloudinary")
  */
 
 exports.sectionAdding = async (req, res) => {
-    try {
-      const { section, active } = req.body;
-      if (!section || !active) {
-        return res.status(400).json({ message: "Missing fields" });
-      }
-      const exist = await Type.findOne({ section: section, active: active });
-      if (exist) {
-        return res.status(400).json({ message: "Type already exists" });
-      }
-      const userId = req.userId; 
-      const addData = new Type({
-        section,
-        active,
-        addedBy:userId
-      });
-      await addData.save();
-      res.status(201).json({ message: "Type added successfully", data: addData });
-    } catch (error) {
-      res.status(500).json({ message: error.message || "Error occurred" });
+  try {
+    const { section, active } = req.body;
+
+    // Validate if required fields are present
+    if (!section || active === undefined) {
+      return res.status(400).json({ message: "Missing fields" });
     }
-  };
-  
+
+    // Check if the section already exists with the same 'active' status
+    const exist = await Type.findOne({ section, active });
+    if (exist) {
+      return res.status(400).json({ message: "Type already exists" });
+    }
+
+    // Get userId from the token (set in previous middleware)
+    const userId = req.userId;
+
+    // Create new Type data
+    const addData = new Type({
+      section,
+      active,
+      addedBy: userId
+    });
+
+  await addData.save()
+    // Send success response with the populated data
+    res.status(201).json({ message: "Type added successfully", data: addData });
+
+  } catch (error) {
+    // Send error response if any error occurs
+    res.status(500).json({ message: error.message || "Error occurred" });
+  }
+};
+
   /**
    * Get section for all Data
    */
   
   exports.getAllTypes = async (req, res) => {
     try {
-      const data = await Type.find({});
+      const data = await Type.find({}).populate({
+        path:'addedBy',
+        select:'-password -__v',
+        populate:{
+          path:'role',
+          select:'-password -__v -permissions'
+        }
+      });
       if (!data) {
         return res.status(404).json({ message: "Error in fetching the data" });
       }
@@ -89,7 +108,7 @@ exports.sectionAdding = async (req, res) => {
   exports.editTypeById = async (req, res) => {
     try {
       const id = req.params.id;
-      const { section, active } = req.body;
+      const { section, active ,addedBy} = req.body;
   
       // Validate input
       if (!section || active === undefined) {
@@ -102,12 +121,12 @@ exports.sectionAdding = async (req, res) => {
         return res.status(404).json({ message: "Type not found" });
       }
   
-      console.log("Pre-update section:", preData.section); // Debugging log
-  
+     // console.log("Pre-update section:", preData.section); Debugging log
+  const userId=req.userId
       // Update Type document
       const updatedType = await Type.findByIdAndUpdate(
         id,
-        { section, active },
+        { section, active ,addedBy:userId },
         { new: true }
       );
   

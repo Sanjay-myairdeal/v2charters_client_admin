@@ -16,7 +16,14 @@ cloudinary.config({
  */
 exports.getModifyCategories = async (req, res) => {
   try {
-    const data = await Categorymodify.find({});
+    const data = await Categorymodify.find({}).populate({
+      path:'addedBy',
+      select:'-password -__v',
+      populate:{
+        path:'role',
+        select:'-password -__v -permissions'
+      }
+    });
     if (!data || data.length === 0) {
       return res.status(404).json({ message: "No data found" });
     }
@@ -136,6 +143,7 @@ exports.editModifyCharterById = async (req, res) => {
       withICU,
       paramedics,
       techStops,
+      addedBy
     } = req.body;
 
     // Fetch the existing category before updating (to retrieve the current image)
@@ -154,7 +162,7 @@ exports.editModifyCharterById = async (req, res) => {
       // Use the existing image if no new image file is provided
       image = req.body.image || preData.image;
     }
-
+const userId=req.userId
     // Update the main Categorymodify document
     const updatedCategory = await Categorymodify.findByIdAndUpdate(
       id,
@@ -179,6 +187,7 @@ exports.editModifyCharterById = async (req, res) => {
         withICU,
         paramedics,
         techStops,
+        addedBy:userId,
         image, // Ensuring we are keeping the original image if no new one is provided
       },
       { new: true }
@@ -204,7 +213,7 @@ exports.editModifyCharterById = async (req, res) => {
       }
     );
 
-    console.log("Updated Subcategories:", updatedSubcategories);
+    //console.log("Updated Subcategories:", updatedSubcategories);debugging
 
     // Respond with a success message and the updated category
     return res.status(200).json({

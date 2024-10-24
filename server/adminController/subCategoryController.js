@@ -14,7 +14,14 @@ cloudinary.config({
  */
 exports.getSubCategories = async (req, res) => {
     try {
-      const data = await Subcategory.find({});
+      const data = await Subcategory.find({}).populate({
+        path:'addedBy',
+        select:'-password -__v',
+        populate:{
+          path:'role',
+          select:'-password -__v -permissions'
+        }
+      });
       if (!data || data.length === 0) {
         return res.status(200).json({ message: "No subCategory data currently" });
       }
@@ -48,7 +55,6 @@ exports.getSubCategories = async (req, res) => {
         fromtime,
         endtime,
         discount,
-        discountprice,
         duration,
         reachdate,
         targetprice,
@@ -71,6 +77,7 @@ exports.getSubCategories = async (req, res) => {
       // Upload image to Cloudinary
       const result = await cloudinary.uploader.upload(image);
       const userId = req.userId; 
+     // console.log(userId)
       // Create flight details object
       const flightDetails = new Subcategory({
         from,
@@ -115,6 +122,93 @@ exports.getSubCategories = async (req, res) => {
       return res.status(500).json({ message: "Server error" });
     }
   };
+  // exports.addSubCategories = async (req, res) => {
+  //   try {
+  //     const {
+  //       from,
+  //       section,
+  //       to,
+  //       chartertype,
+  //       categoryName,
+  //       subCategoryName,
+  //       description,
+  //       date,
+  //       pax,
+  //       availability,
+  //       price,
+  //       airhosts,
+  //       fromtime,
+  //       endtime,
+  //       discount,
+  //       duration,
+  //       reachdate,
+  //       targetprice,
+  //       brokercompany,
+  //       brokerName,
+  //       brokerEmail,
+  //       brokerPhone,
+  //       operatoremail,
+  //       operatorname,
+  //       operatorphone,
+  //     } = req.body;
+  
+  //     const image = req.file ? req.file.path : null;
+  
+  //     if (!image) {
+  //       return res.status(400).json({ message: "Image file is required" });
+  //     }
+  
+  //     // Upload image to Cloudinary
+  //     const result = await cloudinary.uploader.upload(image);
+  //     const userId = req.userId; 
+  
+  //     // Calculate discount and discounted price
+  //     const caldiscount = (discount / 100) * price; // Calculate the amount of discount
+  //     const discountedPrice = price - caldiscount; // Calculate the final price after discount
+  
+  //     // Create flight details object
+  //     const flightDetails = new Subcategory({
+  //       from,
+  //       section,
+  //       to,
+  //       chartertype,
+  //       categoryName,
+  //       subCategoryName,
+  //       description,
+  //       date,
+  //       pax,
+  //       availability,
+  //       price,
+  //       airhosts,
+  //       fromtime,
+  //       endtime,
+  //       discount,
+  //       discountprice: discountedPrice, // Store the final discounted price
+  //       duration,
+  //       reachdate,
+  //       targetprice,
+  //       brokercompany,
+  //       brokerName,
+  //       brokerEmail,
+  //       brokerPhone,
+  //       operatoremail,
+  //       operatorname,
+  //       operatorphone,
+  //       image: result.secure_url,
+  //       addedBy: userId
+  //     });
+  
+  //     // Save flight details to the database
+  //     await flightDetails.save();
+  
+  //     return res
+  //       .status(200)
+  //       .json({ message: "Subcategory data Inserted ", data: flightDetails });
+  //   } catch (error) {
+  //     console.error("Error adding subcategory:", error);
+  //     return res.status(500).json({ message: "Server error" });
+  //   }
+  // };
   
   
   /**
@@ -166,7 +260,7 @@ exports.getSubCategories = async (req, res) => {
       } else {
         image = req.body.image;
       }
-
+      const userId = req.userId; 
       const updatedData = await Subcategory.findByIdAndUpdate(
         id,
         {
@@ -180,7 +274,7 @@ exports.getSubCategories = async (req, res) => {
           date,
           pax,
           availability,
-          addedBy,
+          addedBy:userId,
           price,
           airhosts,
           fromtime,
@@ -251,7 +345,14 @@ exports.getSubCategoryId = async (req, res) => {
         return res.status(400).json({ message: "Subcategory ID is missing in the URL" });
       }
   
-      const filteredSubCategory = await Subcategory.find({ _id: subcategoryId });
+      const filteredSubCategory = await Subcategory.find({ _id: subcategoryId }).populate({
+        path:'addedBy',
+        select:'-password -__v',
+        populate:{
+          path:'role',
+          select:'-password -__v -permissions'
+        }
+      });
   
       if (!filteredSubCategory || filteredSubCategory.length === 0) {
         return res.status(404).json({ message: "No subcategory found for the provided ID" });

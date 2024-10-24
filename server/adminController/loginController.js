@@ -9,7 +9,7 @@ const jwt=require('jsonwebtoken');
 const dotenv=require('dotenv');
 dotenv.config();
 const jwt_secret=process.env.JWT_SECRET
-console.log(jwt_secret)
+// console.log(jwt_secret)
 /**
  * Register a new admin
  */
@@ -146,7 +146,7 @@ exports.deleteUser = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     // Fetch all admins and exclude password and __v
-    const adminData = await admin.find({}).select("-password -__v");
+    const adminData = await admin.find({}).populate('role').select("-password -__v");
 
     // Check if admin data exists
     if (adminData.length === 0) {

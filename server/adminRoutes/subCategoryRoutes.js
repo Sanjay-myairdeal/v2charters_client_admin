@@ -28,8 +28,12 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage });
 
 router.get("/getallsubcategories", subCategoryController.getSubCategories);
+
 router.post("/addsubcategory",verifyToken,checkPermission('canAdd'), upload.single("image"), subCategoryController.addSubCategories);
+
 router.post("/editmodifysubcharterbyid/:id",verifyToken, checkPermission('canEdit'),upload.single("image"), subCategoryController.editSubCategoryById);
+
 router.delete("/deletemodifysubcharterbyid/:id",verifyToken,checkPermission('canDelete'), subCategoryController.deleteModifySubCharterById);
 
+router.get('/getsubcategorybyid/:id',subCategoryController.getSubCategoryId)
 module.exports = router;
