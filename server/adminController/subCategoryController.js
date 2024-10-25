@@ -1,6 +1,6 @@
 const Subcategory = require("../models/Subcategory");
 const cloudinary = require("cloudinary").v2;
-
+const Logs=require('../models/Logs')
 /**
  *  Cloudinary configuration
  */
@@ -113,7 +113,13 @@ exports.getSubCategories = async (req, res) => {
 
       // Save flight details to the database
       await flightDetails.save();
-
+      const logs=new Logs({
+        userId:userId,
+        action:'add',
+        targetType:'Subcategory',
+        targetId:flightDetails._id
+      }) 
+      await logs.save();
       return res
         .status(200)
         .json({ message: "Subcategory data Inserted ", data: flightDetails });
@@ -298,7 +304,13 @@ exports.getSubCategories = async (req, res) => {
       if (!updatedData) {
         return res.status(400).json({ message: "Error in updating the data" });
       }
-
+      const logs=new Logs({
+        userId:userId,
+        action:'edit',
+        targetType:'Subcategory',
+        targetId:updatedData._id
+      }) 
+      await logs.save();
       return res
         .status(200)
         .json({ message: "Data updated successfully", updated: updatedData });
@@ -326,6 +338,13 @@ exports.getSubCategories = async (req, res) => {
       }
   
       await Subcategory.findByIdAndDelete(id);
+      const logs=new Logs({
+        userId:userId,
+        action:'delete',
+        targetType:'Subcategory',
+        targetId:id
+      }) 
+      await logs.save();
       return res.status(200).json({ message: "Data deleted successfully" });
     } catch (error) {
       console.error(error);

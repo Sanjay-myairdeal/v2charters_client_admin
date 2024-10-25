@@ -4,32 +4,29 @@ const jwt = require('jsonwebtoken');
 const jwt_secret = process.env.JWT_SECRET;
 
 exports.verifyToken = (req, res, next) => {
-    // Make sure to handle the header correctly with case-insensitivity
-    const authHeader = req.headers['authorization']; // Changed to lowercase
-    //console.log(authHeader); // To check if the token is being received
-
-    // Check if the Authorization header exists
+    // Ensure the token is in the Authorization header, case-insensitive
+    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
     if (!authHeader) {
         return res.status(403).json({ message: "Token not provided" });
     }
 
-    // Extract the token by splitting the Bearer prefix from the actual token
+    // Split the 'Bearer' prefix from the actual token
     const token = authHeader.split(' ')[1];
-
     if (!token) {
         return res.status(403).json({ message: "Token not provided" });
     }
 
+    // Verify the token using the JWT secret
     try {
-        // Verify the token using the secret from environment variables
+        if (!jwt_secret) throw new Error("JWT_SECRET is not defined in environment variables.");
+        
         const decoded = jwt.verify(token, jwt_secret);
-        req.userId = decoded.userId; // Extract userId from the decoded token
-       // console.log(req.userId);  Optional logging to confirm userId
+        req.userId = decoded.userId;
 
-        next(); // Pass to the next middleware or route handler
+        // Proceed to the next middleware/route handler
+        next();
     } catch (error) {
-        console.log(error);
-        return res.status(401).json({ message: "Session expired . Login again " });
+        console.error("JWT verification failed:", error.message);
+        return res.status(401).json({ message: "Session expired. Please log in again." });
     }
 };
-    ``

@@ -5,20 +5,31 @@ const Subcategory = require("../models/Subcategory");
 exports.viewData = async (req, res) => {
   try {
     const id = req.params.id;
-    const data = await Type.find({ addedBy: id });
-    const categoryData = await Category.find({ addedBy: id });
-    const subCategoryData = await Subcategory.find({ addedBy: id });
-
-    if (
-      data.length === 0 &&
-      categoryData.length === 0 &&
-      subCategoryData.length === 0
-    ) {
-      return res
-        .status(404)
-        .json({ message: "No data added by the particular User" });
-    }
-
+    // console.log(id)
+    const data = await Type.find({ addedBy: id }).populate({
+      path:'addedBy',
+      select:'-password -__v ',
+      populate:{
+        path:'role',
+        select:'-permissions -__v'
+      }
+    });
+    const categoryData = await Category.find({ addedBy: id }).populate({
+      path:'addedBy',
+      select:'-password -__v ',
+      populate:{
+        path:'role',
+        select:'-permissions -__v'
+      }
+    });
+    const subCategoryData = await Subcategory.find({ addedBy: id }).populate({
+      path:'addedBy',
+      select:'-password -__v ',
+      populate:{
+        path:'role',
+        select:'-permissions -__v'
+      }
+    });
     return res
       .status(200)
       .json({

@@ -40,7 +40,7 @@ const filterRoutes = require('./server/adminRoutes/filterRoutes');
 const typeRoutes = require('./server/adminRoutes/typeRoutes');
 const userRole=require('./server/adminRoutes/userRoleRoutes');
 const viewRoutes=require('./server/adminRoutes/viewRoutes')
-
+const adminLogsRoutes=require('./server/adminRoutes/adminLogRoutes')
 
 app.use('/api/v2/admin/types', typeRoutes);
 app.use('/api/v2/admin/filter', filterRoutes);
@@ -53,6 +53,7 @@ app.use('/api/v2/admin/subcategories', subCategoryRoutes);
 app.use('/api/v2/admin/enquiry', enquiryRoutes);
 app.use('/api/v2/admin/userroles',userRole);
 app.use('/api/v2/admin/view',viewRoutes);
+app.use('/api/v2/admin/adminlogs',adminLogsRoutes)
 
 
 // Database Connection

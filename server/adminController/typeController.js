@@ -2,7 +2,7 @@ const Categorymodify = require("../models/Categorymodify");
 const Subcategory = require("../models/Subcategory");
 const Type = require("../models/Type");
 const cloudinary=require("../cloudinary/cloudinary")
-
+const Logs=require('../models/Logs')
 /**
  * Type Section Starts
  */
@@ -33,6 +33,13 @@ exports.sectionAdding = async (req, res) => {
     });
 
   await addData.save()
+  const logs=new Logs({
+    userId:userId,
+    action:'add',
+    targetType:'type',
+    targetId:addData._id
+  }) 
+  await logs.save();
     // Send success response with the populated data
     res.status(201).json({ message: "Type added successfully", data: addData });
 
@@ -93,6 +100,14 @@ exports.sectionAdding = async (req, res) => {
       await Type.findByIdAndDelete(id);
   
       // Respond with a success message
+
+      const logs=new Logs({
+        userId:userId,
+        action:'delete',
+        targetType:'type',
+        targetId:id
+      }) 
+      await logs.save();
       return res.status(200).json({ message: "Data deleted successfully" });
     } catch (error) {
       console.error(error);
@@ -147,7 +162,13 @@ exports.sectionAdding = async (req, res) => {
         { $set: { section: section.trim() } } // Set the new section value
       );
   
-    
+      const logs=new Logs({
+        userId:userId,
+        action:'edit',
+        targetType:'type',
+        targetId:updatedType._id
+      }) 
+      await logs.save();
   
       return res.status(200).json({
         message: "Data updated successfully",

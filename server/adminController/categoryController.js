@@ -1,7 +1,7 @@
 const Categorymodify = require("../models/Categorymodify");
 const Subcategory = require("../models/Subcategory");
 const cloudinary = require("cloudinary").v2;
-
+const Logs=require('../models/Logs')
 /**
  *  Cloudinary configuration
  */
@@ -101,7 +101,13 @@ exports.addModifyCategories = async (req, res) => {
 
     // Save the new document to the database
     const savedCategory = await newModify.save();
-
+    const logs=new Logs({
+      userId:userId,
+      action:'add',
+      targetType:'CategoryModify',
+      targetId:savedCategory._id
+    }) 
+    await logs.save();
     // Respond with success and return the saved document
     return res.status(200).json({
       message: "Data inserted successfully",
@@ -214,7 +220,13 @@ const userId=req.userId
     );
 
     //console.log("Updated Subcategories:", updatedSubcategories);debugging
-
+    const logs=new Logs({
+      userId:userId,
+      action:'edit',
+      targetType:'CategoryModify',
+      targetId:updatedCategory._id
+    }) 
+    await logs.save();
     // Respond with a success message and the updated category
     return res.status(200).json({
       message: "Data updated successfully",
@@ -251,7 +263,13 @@ exports.deleteModifyCharterById = async (req, res) => {
 
     // Delete the Categorymodify document
     await Categorymodify.findByIdAndDelete(id);
-
+    const logs=new Logs({
+      userId:userId,
+      action:'delete',
+      targetType:'CategoryModify',
+      targetId:id
+    }) 
+    await logs.save();
     // Respond with a success message
     return res.status(200).json({ message: "Data deleted successfully" });
   } catch (error) {
