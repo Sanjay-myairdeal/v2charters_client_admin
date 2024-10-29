@@ -37,7 +37,8 @@ exports.sectionAdding = async (req, res) => {
     userId:userId,
     action:'add',
     targetType:'type',
-    targetId:addData._id
+    targetId:addData._id,
+    targetData:addData
   }) 
   await logs.save();
     // Send success response with the populated data
@@ -105,7 +106,8 @@ exports.sectionAdding = async (req, res) => {
         userId:userId,
         action:'delete',
         targetType:'type',
-        targetId:id
+        targetId:typeData._id,
+        targetData:typeData
       }) 
       await logs.save();
       return res.status(200).json({ message: "Data deleted successfully" });
@@ -166,7 +168,8 @@ exports.sectionAdding = async (req, res) => {
         userId:userId,
         action:'edit',
         targetType:'type',
-        targetId:updatedType._id
+        targetId:preData._id,
+        targetData:preData
       }) 
       await logs.save();
   

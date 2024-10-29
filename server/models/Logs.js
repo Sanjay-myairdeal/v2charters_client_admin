@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const adminlogSchema = mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -12,12 +13,16 @@ const adminlogSchema = mongoose.Schema({
   },
   targetType: {
     type: String,
-    required: true
-  }, // E.g., "Type", "Subcategory"
+    required: true,
+  },
   targetId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-  }, // ID of the affected document
+  },
+  targetData: { 
+    type: mongoose.Schema.Types.Mixed // Stores the full document data 
+  },
   timestamp: { type: Date, default: Date.now },
 });
-module.exports = mongoose.model('AdminLog', adminlogSchema);
+
+module.exports = mongoose.model("AdminLog", adminlogSchema);

@@ -113,11 +113,13 @@ exports.getSubCategories = async (req, res) => {
 
       // Save flight details to the database
       await flightDetails.save();
+      // console.log(flightDetails)
       const logs=new Logs({
         userId:userId,
         action:'add',
         targetType:'Subcategory',
-        targetId:flightDetails._id
+        targetId:flightDetails._id,
+        tagetData:flightDetails
       }) 
       await logs.save();
       return res
@@ -308,7 +310,8 @@ exports.getSubCategories = async (req, res) => {
         userId:userId,
         action:'edit',
         targetType:'Subcategory',
-        targetId:updatedData._id
+        targetId:updatedData._id,
+        targetData:updatedData
       }) 
       await logs.save();
       return res
@@ -342,7 +345,8 @@ exports.getSubCategories = async (req, res) => {
         userId:userId,
         action:'delete',
         targetType:'Subcategory',
-        targetId:id
+        targetId:category._id,
+        targetData:category
       }) 
       await logs.save();
       return res.status(200).json({ message: "Data deleted successfully" });

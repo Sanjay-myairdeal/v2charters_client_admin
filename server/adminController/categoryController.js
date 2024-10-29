@@ -105,7 +105,8 @@ exports.addModifyCategories = async (req, res) => {
       userId:userId,
       action:'add',
       targetType:'CategoryModify',
-      targetId:savedCategory._id
+      targetId:savedCategory._id,
+      targetData:savedCategory
     }) 
     await logs.save();
     // Respond with success and return the saved document
@@ -224,7 +225,8 @@ const userId=req.userId
       userId:userId,
       action:'edit',
       targetType:'CategoryModify',
-      targetId:updatedCategory._id
+      targetId:updatedCategory._id,
+      targetData:updatedCategory
     }) 
     await logs.save();
     // Respond with a success message and the updated category
@@ -267,7 +269,8 @@ exports.deleteModifyCharterById = async (req, res) => {
       userId:userId,
       action:'delete',
       targetType:'CategoryModify',
-      targetId:id
+      targetId:category._id,
+      targetData:category
     }) 
     await logs.save();
     // Respond with a success message
