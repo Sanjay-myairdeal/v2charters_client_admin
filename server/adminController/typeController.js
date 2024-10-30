@@ -17,7 +17,7 @@ exports.sectionAdding = async (req, res) => {
     }
 
     // Check if the section already exists with the same 'active' status
-    const exist = await Type.findOne({ section, active });
+    const exist = await Type.findOne({ section, active , isDeleted:false  });
     if (exist) {
       return res.status(400).json({ message: "Type already exists" });
     }
@@ -56,7 +56,7 @@ exports.sectionAdding = async (req, res) => {
   
   exports.getAllTypes = async (req, res) => {
     try {
-      const data = await Type.find({}).populate({
+      const data = await Type.find({isDeleted:false}).populate({
         path:'addedBy',
         select:'-password -__v',
         populate:{
@@ -77,47 +77,91 @@ exports.sectionAdding = async (req, res) => {
    * Delete Type
    */
   
+  // exports.deleteTypeById = async (req, res) => {
+  //   try {
+  //     const id = req.params.id;
+  //     if (!id) {
+  //       return res.status(400).json({ message: "ID is missing" });
+  //     }
+
+  //     // Fetch the Type document by its ID
+
+  //     if (!typeData) {
+  //       return res.status(404).json({ message: "Type not found" });
+  //     }
+
+  //     // await Type.findByIdAndDelete(id)
+  //     await Type.updateOne({ id: id, isDeleted: true });
+
+  //     // Delete related Categorymodify documents
+  //     // await Categorymodify.deleteMany({ isDeleted: typeData.isDeleted });
+
+  //     await Categorymodify.updateMany({ isDeleted: typeData.isDeleted });
+
+  //     // Delete related Subcategory documents
+  //     // await Subcategory.deleteMany({ isDeleted: typeData.isDeleted });
+
+  //     await Subcategory.updateMany({ isDeleted: typeData.isDeleted });
+
+  //     // // Delete the Type document
+  //     // await Type.findByIdAndDelete(id);
+
+  //     // Respond with a success message
+  //     // Get userId from the token (set in previous middleware)
+  //     const userId = req.userId;
+  //     const logs = new Logs({
+  //       userId: userId,
+  //       action: "delete",
+  //       targetType: "type",
+  //       targetId: typeData._id,
+  //       targetData: typeData,
+  //     });
+  //     await logs.save();
+  //     return res.status(200).json({ message: "Data deleted successfully" });
+  //   } catch (error) {
+  //     console.error(error);
+  //     return res.status(500).json({ message: "Server error" });
+  //   }
+  // };
+  
   exports.deleteTypeById = async (req, res) => {
     try {
       const id = req.params.id;
       if (!id) {
         return res.status(400).json({ message: "ID is missing" });
       }
-  
+
       // Fetch the Type document by its ID
       const typeData = await Type.findById(id);
       if (!typeData) {
         return res.status(404).json({ message: "Type not found" });
       }
-  
-  
-    // Delete related Categorymodify documents
-      await Categorymodify.deleteMany({ section: typeData.section });
-  
-      // Delete related Subcategory documents
-      await Subcategory.deleteMany({ section: typeData.section });
-  
-      // Delete the Type document
-      await Type.findByIdAndDelete(id);
-  
-      // Respond with a success message
 
-      const logs=new Logs({
-        userId:userId,
-        action:'delete',
-        targetType:'type',
-        targetId:typeData._id,
-        targetData:typeData
-      }) 
+      // Soft delete the Type document by setting isDeleted to true
+      await Type.updateOne({ _id: id }, { isDeleted: true });
+
+      // Soft delete related Categorymodify and Subcategory documents
+      await Categorymodify.updateMany({ typeId: id }, { isDeleted: true });
+      await Subcategory.updateMany({ typeId: id }, { isDeleted: true });
+
+      // Log the action
+      const userId = req.userId; // Get userId from the token (set in previous middleware)
+      const logs = new Logs({
+        userId: userId,
+        action: "delete",
+        targetType: "type",
+        targetId: typeData._id,
+        targetData: typeData,
+      });
       await logs.save();
+
       return res.status(200).json({ message: "Data deleted successfully" });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Server error" });
     }
-  };
-  
-  
+};
+
   
   /**
    * Type Editing

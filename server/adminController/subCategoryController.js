@@ -14,7 +14,7 @@ cloudinary.config({
  */
 exports.getSubCategories = async (req, res) => {
     try {
-      const data = await Subcategory.find({}).populate({
+      const data = await Subcategory.find({isDeleted:true}).populate({
         path:'addedBy',
         select:'-password -__v',
         populate:{
@@ -79,6 +79,13 @@ exports.getSubCategories = async (req, res) => {
       const userId = req.userId; 
      // console.log(userId)
       // Create flight details object
+
+   // Check if the section already exists with the same 'active' status
+   const exist = await Categorymodify.findOne({ section, chartertype, categoryName ,subCategoryName, isDeleted:false  });
+   if (exist) {
+     return res.status(400).json({ message: "Sub-Category already exists" });
+   }
+
       const flightDetails = new Subcategory({
         from,
         section,
@@ -327,6 +334,35 @@ exports.getSubCategories = async (req, res) => {
    * Delete Sub category
    */
   
+  // exports.deleteModifySubCharterById = async (req, res) => {
+  //   try {
+  //     const id = req.params.id;
+  
+  //     if (!id) {
+  //       return res.status(400).json({ message: "ID is missing" });
+  //     }
+  
+  //     const category = await Subcategory.findById(id);
+  //     if (!category) {
+  //       return res.status(404).json({ message: "Data not found" });
+  //     }
+  
+  //     await Subcategory.findByIdAndDelete(id);
+  //     const logs=new Logs({
+  //       userId:userId,
+  //       action:'delete',
+  //       targetType:'Subcategory',
+  //       targetId:category._id,
+  //       targetData:category
+  //     }) 
+  //     await logs.save();
+  //     return res.status(200).json({ message: "Data deleted successfully" });
+  //   } catch (error) {
+  //     console.error(error);
+  //     return res.status(500).json({ message: "Server error" });
+  //   }
+  // };
+  
   exports.deleteModifySubCharterById = async (req, res) => {
     try {
       const id = req.params.id;
@@ -335,20 +371,26 @@ exports.getSubCategories = async (req, res) => {
         return res.status(400).json({ message: "ID is missing" });
       }
   
+      // Fetch the Subcategory document by its ID
       const category = await Subcategory.findById(id);
       if (!category) {
         return res.status(404).json({ message: "Data not found" });
       }
   
-      await Subcategory.findByIdAndDelete(id);
-      const logs=new Logs({
-        userId:userId,
-        action:'delete',
-        targetType:'Subcategory',
-        targetId:category._id,
-        targetData:category
-      }) 
+      // Soft delete the Subcategory by setting isDeleted to true
+      await Subcategory.updateOne({ _id: id }, { isDeleted: true });
+  
+      // Log the action
+      const userId = req.userId; // Retrieve userId from token in middleware
+      const logs = new Logs({
+        userId: userId,
+        action: 'delete',
+        targetType: 'Subcategory',
+        targetId: category._id,
+        targetData: category,
+      });
       await logs.save();
+  
       return res.status(200).json({ message: "Data deleted successfully" });
     } catch (error) {
       console.error(error);
@@ -356,7 +398,6 @@ exports.getSubCategories = async (req, res) => {
     }
   };
   
-
   /**
  * Get Sub Category based on Category
  */

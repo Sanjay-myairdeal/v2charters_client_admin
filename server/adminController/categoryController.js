@@ -72,7 +72,11 @@ exports.addModifyCategories = async (req, res) => {
 
     // Upload image to Cloudinary
     const result = await cloudinary.uploader.upload(imagePath);
-
+   // Check if the section already exists with the same 'active' status
+   const exist = await Categorymodify.findOne({ section, chartertype, categoryName , isDeleted:false  });
+   if (exist) {
+     return res.status(400).json({ message: "Category already exists" });
+   }
     // Create new category modification document
     const newModify = new Categorymodify({
       chartertype,
@@ -243,6 +247,42 @@ const userId=req.userId
 /**
  * Delete Category Data
  */
+// exports.deleteModifyCharterById = async (req, res) => {
+//   try {
+//     const id = req.params.id;
+
+//     if (!id) {
+//       return res.status(400).json({ message: "ID is missing" });
+//     }
+
+//     // Fetch the Categorymodify document by its ID
+//     const category = await Categorymodify.findById(id);
+
+//     if (!category) {
+//       return res.status(404).json({ message: "Data not found" });
+//     }
+//  // Soft delete the Type document by setting isDeleted to true
+//  await Categorymodify.updateOne({ _id: id }, { isDeleted: true });
+//     // Delete all Subcategory documents related to the chartertype of the fetched Categorymodify document
+//     await Subcategory.updateMany({ _id: id }, { isDeleted: true });
+
+//     // Delete the Categorymodify document
+//     await Categorymodify.findByIdAndDelete(id);
+//     const logs=new Logs({
+//       userId:userId,
+//       action:'delete',
+//       targetType:'CategoryModify',
+//       targetId:category._id,
+//       targetData:category
+//     }) 
+//     await logs.save();
+//     // Respond with a success message
+//     return res.status(200).json({ message: "Data deleted successfully" });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ message: "Server error" });
+//   }
+// };
 exports.deleteModifyCharterById = async (req, res) => {
   try {
     const id = req.params.id;
@@ -253,26 +293,27 @@ exports.deleteModifyCharterById = async (req, res) => {
 
     // Fetch the Categorymodify document by its ID
     const category = await Categorymodify.findById(id);
-
     if (!category) {
       return res.status(404).json({ message: "Data not found" });
     }
 
-    // Delete all Subcategory documents related to the chartertype of the fetched Categorymodify document
-    await Subcategory.deleteMany({
-      chartertype: category.chartertype,
-    });
+    // Soft delete the Categorymodify document by setting isDeleted to true
+    await Categorymodify.updateOne({ _id: id }, { isDeleted: true });
 
-    // Delete the Categorymodify document
-    await Categorymodify.findByIdAndDelete(id);
-    const logs=new Logs({
-      userId:userId,
-      action:'delete',
-      targetType:'CategoryModify',
-      targetId:category._id,
-      targetData:category
-    }) 
+    // Soft delete related Subcategory documents linked by `categoryId`
+    await Subcategory.updateMany({ categoryId: id }, { isDeleted: true });
+
+    // Log the action
+    const userId = req.userId; // Get userId from the token (set in previous middleware)
+    const logs = new Logs({
+      userId: userId,
+      action: 'delete',
+      targetType: 'CategoryModify',
+      targetId: category._id,
+      targetData: category
+    });
     await logs.save();
+
     // Respond with a success message
     return res.status(200).json({ message: "Data deleted successfully" });
   } catch (error) {

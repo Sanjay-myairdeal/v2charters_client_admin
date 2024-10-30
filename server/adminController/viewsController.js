@@ -43,3 +43,44 @@ exports.viewData = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
+exports.viewAllData=async(req,res)=>{
+  try {
+    const data = await Type.find({}).populate({
+      path:'addedBy',
+      select:'-password -__v ',
+      populate:{
+        path:'role',
+        select:'-permissions -__v'
+      }
+    });
+    const categoryData = await Category.find({}).populate({
+      path:'addedBy',
+      select:'-password -__v ',
+      populate:{
+        path:'role',
+        select:'-permissions -__v'
+      }
+    });
+    const subCategoryData = await Subcategory.find({}).populate({
+      path:'addedBy',
+      select:'-password -__v ',
+      populate:{
+        path:'role',
+        select:'-permissions -__v'
+      }
+    });
+    return res
+      .status(200)
+      .json({
+        message: "Whole data",
+        Types: data,
+        Category: categoryData,
+        Subcategory: subCategoryData,
+      });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
