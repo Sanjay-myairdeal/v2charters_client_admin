@@ -1,7 +1,8 @@
 const Categorymodify = require("../models/Categorymodify");
 const Subcategory = require("../models/Subcategory");
 const cloudinary = require("cloudinary").v2;
-const Logs=require('../models/Logs')
+const Logs=require('../models/Logs');
+const mongoose=require('mongoose');
 /**
  *  Cloudinary configuration
  */
@@ -16,7 +17,7 @@ cloudinary.config({
  */
 exports.getModifyCategories = async (req, res) => {
   try {
-    const data = await Categorymodify.find({}).populate({
+    const data = await Categorymodify.find({isDeleted:false}).populate({
       path:'addedBy',
       select:'-password -__v',
       populate:{
@@ -283,7 +284,49 @@ const userId=req.userId
 //     return res.status(500).json({ message: "Server error" });
 //   }
 // };
+// exports.deleteModifyCharterById = async (req, res) => {
+//   try {
+//     const id = req.params.id;
+
+//     if (!id) {
+//       return res.status(400).json({ message: "ID is missing" });
+//     }
+
+//     // Fetch the Categorymodify document by its ID
+//     const category = await Categorymodify.findById(id);
+//     if (!category) {
+//       return res.status(404).json({ message: "Data not found" });
+//     }
+
+//     // Soft delete the Categorymodify document by setting isDeleted to true
+//     await Categorymodify.updateOne({ chartertype: category.chartertype }, { isDeleted: true });
+
+//     // Soft delete related Subcategory documents linked by `categoryId`
+//     await Subcategory.updateMany({ chartertype: category.chartertype }, { isDeleted: true });
+
+//     // Log the action
+//     const userId = req.userId; // Get userId from the token (set in previous middleware)
+//     const logs = new Logs({
+//       userId: userId,
+//       action: 'delete',
+//       targetType: 'CategoryModify',
+//       targetId: category._id,
+//       targetData: category
+//     });
+//     await logs.save();
+
+//     // Respond with a success message
+//     return res.status(200).json({ message: "Data deleted successfully" });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ message: "Server error" });
+//   }
+// };
+
+
 exports.deleteModifyCharterById = async (req, res) => {
+  const session = await mongoose.startSession(); // Start a session for atomic operations
+  session.startTransaction();
   try {
     const id = req.params.id;
 
@@ -291,32 +334,40 @@ exports.deleteModifyCharterById = async (req, res) => {
       return res.status(400).json({ message: "ID is missing" });
     }
 
-    // Fetch the Categorymodify document by its ID
+    // Fetch the Categorymodify document by its ID and check if it’s already soft-deleted
     const category = await Categorymodify.findById(id);
     if (!category) {
       return res.status(404).json({ message: "Data not found" });
     }
+    if (category.isDeleted) {
+      return res.status(400).json({ message: "Data is already deleted" });
+    }
 
-    // Soft delete the Categorymodify document by setting isDeleted to true
-    await Categorymodify.updateOne({ _id: id }, { isDeleted: true });
+    // Fetch related Subcategory documents before updating for logging
+    const subcategories = await Subcategory.find({ chartertype: category.chartertype });
 
-    // Soft delete related Subcategory documents linked by `categoryId`
-    await Subcategory.updateMany({ categoryId: id }, { isDeleted: true });
+    // Soft delete the Categorymodify document and related Subcategories
+    await Categorymodify.updateOne({ _id: id }, { isDeleted: true }).session(session);
+    await Subcategory.updateMany({ chartertype: category.chartertype }, { isDeleted: true }).session(session);
 
-    // Log the action
+    // Log the action with detailed target data
     const userId = req.userId; // Get userId from the token (set in previous middleware)
     const logs = new Logs({
       userId: userId,
       action: 'delete',
       targetType: 'CategoryModify',
       targetId: category._id,
-      targetData: category
+      targetData: { category, subcategories }, // Log full data for category and related subcategories
     });
-    await logs.save();
+    await logs.save({ session });
 
-    // Respond with a success message
+    await session.commitTransaction(); // Commit the transaction
+    session.endSession();
+
     return res.status(200).json({ message: "Data deleted successfully" });
   } catch (error) {
+    await session.abortTransaction(); // Roll back on error
+    session.endSession();
     console.error(error);
     return res.status(500).json({ message: "Server error" });
   }

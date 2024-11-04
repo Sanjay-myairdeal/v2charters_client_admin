@@ -3,6 +3,7 @@ const Subcategory = require("../models/Subcategory");
 const Type = require("../models/Type");
 const cloudinary=require("../cloudinary/cloudinary")
 const Logs=require('../models/Logs')
+const mongoose=require('mongoose');
 /**
  * Type Section Starts
  */
@@ -124,42 +125,93 @@ exports.sectionAdding = async (req, res) => {
   //   }
   // };
   
-  exports.deleteTypeById = async (req, res) => {
-    try {
-      const id = req.params.id;
-      if (!id) {
-        return res.status(400).json({ message: "ID is missing" });
-      }
+//   exports.deleteTypeById = async (req, res) => {
+//     try {
+//       const id = req.params.id;
+//       if (!id) {
+//         return res.status(400).json({ message: "ID is missing" });
+//       }
 
-      // Fetch the Type document by its ID
-      const typeData = await Type.findById(id);
-      if (!typeData) {
-        return res.status(404).json({ message: "Type not found" });
-      }
+//       // Fetch the Type document by its ID
+//       const typeData = await Type.findById(id);
+//       if (!typeData) {
+//         return res.status(404).json({ message: "Type not found" });
+//       }
 
-      // Soft delete the Type document by setting isDeleted to true
-      await Type.updateOne({ _id: id }, { isDeleted: true });
+//       // Soft delete the Type document by setting isDeleted to true
+//       await Type.updateOne({ _id: id }, { isDeleted: true });
 
-      // Soft delete related Categorymodify and Subcategory documents
-      await Categorymodify.updateMany({ typeId: id }, { isDeleted: true });
-      await Subcategory.updateMany({ typeId: id }, { isDeleted: true });
+//       // Soft delete related Categorymodify and Subcategory documents
+//       await Categorymodify.updateMany({ section: typeData.section }, { isDeleted: true });
+//       await Subcategory.updateMany({ section: typeData.section }, { isDeleted: true });
 
-      // Log the action
-      const userId = req.userId; // Get userId from the token (set in previous middleware)
-      const logs = new Logs({
-        userId: userId,
-        action: "delete",
-        targetType: "type",
-        targetId: typeData._id,
-        targetData: typeData,
-      });
-      await logs.save();
+//       // Log the action
+//       const userId = req.userId; // Get userId from the token (set in previous middleware)
+//       const logs = new Logs({
+//         userId: userId,
+//         action: "delete",
+//         targetType: "type",
+//         targetId: typeData._id,
+//         targetData: typeData,
+//       });
+//       await logs.save();
 
-      return res.status(200).json({ message: "Data deleted successfully" });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Server error" });
+//       return res.status(200).json({ message: "Data deleted successfully" });
+//     } catch (error) {
+//       console.error(error);
+//       return res.status(500).json({ message: "Server error" });
+//     }
+// };
+exports.deleteTypeById = async (req, res) => {
+  const session = await mongoose.startSession(); // Start a session for atomic operations
+  session.startTransaction();
+  try {
+    const id = req.params.id;
+    if (!id) {
+      return res.status(400).json({ message: "ID is missing" });
     }
+
+    // Fetch the Type document by its ID and check deletion status
+    const typeData = await Type.findById(id);
+    if (!typeData) {
+      return res.status(404).json({ message: "Type not found" });
+    }
+    if (typeData.isDeleted) {
+      return res.status(400).json({ message: "Type is already deleted" });
+    }
+
+    // Soft delete the Type document by setting isDeleted to true
+    await Type.updateOne({ _id: id }, { isDeleted: true }).session(session);
+
+    // Fetch related Categorymodify and Subcategory documents before updating for logging
+    const categoryData = await Categorymodify.find({ section: typeData.section });
+    const subcategoryData = await Subcategory.find({ section: typeData.section });
+
+    // Soft delete related Categorymodify and Subcategory documents
+    await Categorymodify.updateMany({ section: typeData.section }, { isDeleted: true }).session(session);
+    await Subcategory.updateMany({ section: typeData.section }, { isDeleted: true }).session(session);
+
+    // Log the action
+    const userId = req.userId; // Get userId from the token (set in previous middleware)
+    const logs = new Logs({
+      userId: userId,
+      action: "delete",
+      targetType: "type",
+      targetId: typeData._id,
+      targetData: { typeData, categoryData, subcategoryData }, // Log complete data
+    });
+    await logs.save({ session });
+
+    await session.commitTransaction(); // Commit the transaction
+    session.endSession();
+
+    return res.status(200).json({ message: "Data deleted successfully" });
+  } catch (error) {
+    await session.abortTransaction(); // Roll back on error
+    session.endSession();
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
 };
 
   

@@ -1,6 +1,7 @@
 const Subcategory = require("../models/Subcategory");
 const cloudinary = require("cloudinary").v2;
-const Logs=require('../models/Logs')
+const Logs=require('../models/Logs');
+
 /**
  *  Cloudinary configuration
  */
@@ -14,7 +15,7 @@ cloudinary.config({
  */
 exports.getSubCategories = async (req, res) => {
     try {
-      const data = await Subcategory.find({isDeleted:true}).populate({
+      const data = await Subcategory.find({isDeleted:false}).populate({
         path:'addedBy',
         select:'-password -__v',
         populate:{
@@ -81,7 +82,7 @@ exports.getSubCategories = async (req, res) => {
       // Create flight details object
 
    // Check if the section already exists with the same 'active' status
-   const exist = await Categorymodify.findOne({ section, chartertype, categoryName ,subCategoryName, isDeleted:false  });
+   const exist = await Subcategory.findOne({ section, chartertype, categoryName ,subCategoryName, isDeleted:false , from , to , date });
    if (exist) {
      return res.status(400).json({ message: "Sub-Category already exists" });
    }
@@ -126,8 +127,9 @@ exports.getSubCategories = async (req, res) => {
         action:'add',
         targetType:'Subcategory',
         targetId:flightDetails._id,
-        tagetData:flightDetails
+        targetData: flightDetails
       }) 
+      // console.log(logs)
       await logs.save();
       return res
         .status(200)
