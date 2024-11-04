@@ -1,7 +1,6 @@
 /**
  * User Roles controllers
  */
-
 const admin = require("../models/admin.js");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
@@ -18,7 +17,7 @@ exports.createUser = async (req, res) => {
     const { email, password, role ,name} = req.body;
 
     // Check if all fields are provided
-    if (!email || !password || !role || !name) {
+    if (!email || !password || !role || !name ) {
       return res.status(400).json({ message: "Missing Fields" });
     }
 
@@ -83,7 +82,7 @@ exports.login = async (req, res) => {
     if (!checkedPassword) {
       return res.status(401).json({ message: "Password Not Matching" });
     }
-
+ 
     // Validate role: compare ObjectIds
     if (!mongoose.Types.ObjectId.isValid(role)) {
       return res.status(400).json({ message: "Invalid Role ID format" });
@@ -93,6 +92,9 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "No user with particular role or role mismatch" });
     }
 
+if (data.isBlocked) {
+  return res.status(403).json({ message: "User is blocked. Access denied." });
+}
     // Exclude password and __v from the response
     const loginData = await admin.findOne({ email }).select("-password -__v");
     const token=jwt.sign({userId:loginData._id},jwt_secret,{expiresIn:"1h"})
@@ -229,5 +231,25 @@ exports.getUserById = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server Error" });
+  }
+};
+
+exports.toggleBlockUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isBlocked } = req.body;
+
+    if (!mongoose.isValidObjectId(id)) return res.status(400).json({ message: "Invalid ID format" });
+
+    const updatedUser = await admin.findByIdAndUpdate(id, { isBlocked }, { new: true }).select("-password -__v");
+    if (!updatedUser) return res.status(404).json({ message: "User not found" });
+
+    return res.status(200).json({
+      message: `User has been ${isBlocked ? "blocked" : "unblocked"} successfully`,
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating block status:", error.message);
+    return res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };

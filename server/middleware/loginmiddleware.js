@@ -2,8 +2,9 @@ const dotenv = require("dotenv");
 dotenv.config();
 const jwt = require("jsonwebtoken");
 const jwt_secret = process.env.JWT_SECRET;
+const admin = require("../models/admin.js");
 
-exports.verifyToken = (req, res, next) => {
+exports.verifyToken = async (req, res, next) => {
   // Ensure the token is in the Authorization header, case-insensitive
   const authHeader =
     req.headers["authorization"] || req.headers["Authorization"];
@@ -25,6 +26,13 @@ exports.verifyToken = (req, res, next) => {
     const decoded = jwt.verify(token, jwt_secret);
     req.userId = decoded.userId;
 
+     // Check if user is blocked
+     const user = await admin.findById(req.userId).select("isBlocked");
+     if (!user) return res.status(404).json({ message: "User not found" });
+ 
+     if (user.isBlocked) {
+       return res.status(403).json({ message: "User is blocked. Access denied." });
+     }
     // Proceed to the next middleware/route handler
     next();
   } catch (error) {

@@ -16,6 +16,10 @@ const AdminSchema=mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,  // Reference to the UserRole object
         ref: 'UserRole',  // Reference to the UserRole model
         required: true
-    }
+    },
+    isBlocked: { 
+        type: Boolean,
+         default: false 
+        }
 })
 module.exports=mongoose.model('admin',AdminSchema);
