@@ -14,12 +14,13 @@ exports.onDemandSearch = async (req, res) => {
     const paxNumber = Number(pax);
     // Search for subcategories matching the search criteria with pax less than the given value
     const subcategories = await Subcategory.find({
+      isDeleted:false,
       section,
       from,
       to,
       date,
       pax: { $lte: paxNumber },
-    });
+    }).select('-isDeleted -addedBy -__v');
     //  console.log("pax given by user",pax)
     // Check if results were found
     if (!subcategories || subcategories.length === 0) {

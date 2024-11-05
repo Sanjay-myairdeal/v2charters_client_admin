@@ -20,21 +20,22 @@ const Log = require("../models/Logs");
 exports.getLogs = async (req, res) => {
   try {
     const logs = await Log.find({})
+      .select('-targetData.isDeleted') // Exclude the isDeleted field in targetData
       .populate({
         path: 'userId',
-        select: '-password -__v',
+        select: '-password -__v', // Exclude sensitive fields from user data
       })
       .populate({
         path: 'targetId',
-        select: '-__v',
+        select: '-__v', // Exclude versioning field from target data
       });
 
-    // Format timestamps in IST and readable format
+    // Format timestamps in IST and make them human-readable
     const formattedLogs = logs.map(log => ({
       ...log._doc,
       timestamp: moment(log.timestamp)
         .tz("Asia/Kolkata")
-        .format("DD-MM-YYYY HH:mm:ss"),
+        .format("DD-MM-YYYY HH:mm:ss"), // Format the timestamp
     }));
 
     res.status(200).json({
@@ -45,3 +46,4 @@ exports.getLogs = async (req, res) => {
     res.status(500).json({ message: "Error fetching logs" });
   }
 };
+

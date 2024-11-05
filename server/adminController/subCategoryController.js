@@ -15,9 +15,9 @@ cloudinary.config({
  */
 exports.getSubCategories = async (req, res) => {
     try {
-      const data = await Subcategory.find({isDeleted:false}).populate({
+      const data = await Subcategory.find({isDeleted:false}).select('-isDeleted').populate({
         path:'addedBy',
-        select:'-password -__v',
+        select:'-password -__v -isBlocked',
         populate:{
           path:'role',
           select:'-password -__v -permissions'

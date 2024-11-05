@@ -6,25 +6,25 @@ exports.viewData = async (req, res) => {
   try {
     const id = req.params.id;
     // console.log(id)
-    const data = await Type.find({ addedBy: id }).populate({
+    const data = await Type.find({ addedBy: id }).select('-isDeleted').populate({
       path:'addedBy',
-      select:'-password -__v ',
+      select:'-password -__v -isBlocked',
       populate:{
         path:'role',
         select:'-permissions -__v'
       }
     });
-    const categoryData = await Category.find({ addedBy: id }).populate({
+    const categoryData = await Category.find({ addedBy: id }).select('-isDeleted').populate({
       path:'addedBy',
-      select:'-password -__v ',
+      select:'-password -__v -isBlocked',
       populate:{
         path:'role',
         select:'-permissions -__v'
       }
     });
-    const subCategoryData = await Subcategory.find({ addedBy: id }).populate({
+    const subCategoryData = await Subcategory.find({ addedBy: id }).select('-isDeleted').populate({
       path:'addedBy',
-      select:'-password -__v ',
+      select:'-password -__v -isBlocked',
       populate:{
         path:'role',
         select:'-permissions -__v'
@@ -47,25 +47,25 @@ exports.viewData = async (req, res) => {
 
 exports.viewAllData=async(req,res)=>{
   try {
-    const data = await Type.find({}).populate({
+    const data = await Type.find({}).select('-isDeleted').populate({
       path:'addedBy',
-      select:'-password -__v ',
+      select:'-password -__v -isBlocked',
       populate:{
         path:'role',
         select:'-permissions -__v'
       }
     });
-    const categoryData = await Category.find({}).populate({
+    const categoryData = await Category.find({}).select('-isDeleted').populate({
       path:'addedBy',
-      select:'-password -__v ',
+      select:'-password -__v -isBlocked',
       populate:{
         path:'role',
         select:'-permissions -__v'
       }
     });
-    const subCategoryData = await Subcategory.find({}).populate({
+    const subCategoryData = await Subcategory.find({}).select('-isDeleted').populate({
       path:'addedBy',
-      select:'-password -__v ',
+      select:'-password -__v -isBlocked',
       populate:{
         path:'role',
         select:'-permissions -__v'

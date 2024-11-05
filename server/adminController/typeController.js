@@ -57,9 +57,9 @@ exports.sectionAdding = async (req, res) => {
   
   exports.getAllTypes = async (req, res) => {
     try {
-      const data = await Type.find({isDeleted:false}).populate({
+      const data = await Type.find({isDeleted:false}).select('-isDeleted').populate({
         path:'addedBy',
-        select:'-password -__v',
+        select:'-password -__v -isBlocked',
         populate:{
           path:'role',
           select:'-password -__v -permissions'
@@ -184,12 +184,22 @@ exports.deleteTypeById = async (req, res) => {
     await Type.updateOne({ _id: id }, { isDeleted: true }).session(session);
 
     // Fetch related Categorymodify and Subcategory documents before updating for logging
-    const categoryData = await Categorymodify.find({ section: typeData.section });
-    const subcategoryData = await Subcategory.find({ section: typeData.section });
+    const categoryData = await Categorymodify.find({
+      section: typeData.section,
+    });
+    const subcategoryData = await Subcategory.find({
+      section: typeData.section,
+    });
 
     // Soft delete related Categorymodify and Subcategory documents
-    await Categorymodify.updateMany({ section: typeData.section }, { isDeleted: true }).session(session);
-    await Subcategory.updateMany({ section: typeData.section }, { isDeleted: true }).session(session);
+    await Categorymodify.updateMany(
+      { section: typeData.section },
+      { isDeleted: true }
+    ).session(session);
+    await Subcategory.updateMany(
+      { section: typeData.section },
+      { isDeleted: true }
+    ).session(session);
 
     // Log the action
     const userId = req.userId; // Get userId from the token (set in previous middleware)
@@ -205,7 +215,13 @@ exports.deleteTypeById = async (req, res) => {
     await session.commitTransaction(); // Commit the transaction
     session.endSession();
 
-    return res.status(200).json({ message: "Data deleted successfully" });
+    return res
+      .status(200)
+      .json({
+        message: "Data deleted successfully",
+        updatedCategories: categoryData.modifiedCount,
+        updatedSubcategories: subcategoryData.modifiedCount,
+      });
   } catch (error) {
     await session.abortTransaction(); // Roll back on error
     session.endSession();
