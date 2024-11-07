@@ -3,7 +3,7 @@ dotenv.config();
 const jwt = require("jsonwebtoken");
 const jwt_secret = process.env.JWT_SECRET;
 const admin = require("../models/admin.js");
-
+const {blacklist}=require('../adminController/loginController.js')
 exports.verifyToken = async (req, res, next) => {
   // Ensure the token is in the Authorization header, case-insensitive
   const authHeader =
@@ -14,10 +14,16 @@ exports.verifyToken = async (req, res, next) => {
 
   // Split the 'Bearer' prefix from the actual token
   const token = authHeader.split(" ")[1];
+
   if (!token) {
     return res.status(403).json({ message: "Token not provided" });
   }
-
+ // Check if the token is blacklisted
+if (blacklist.has(token)) {
+  return res.status(403).json({ message: "Invalid token. Please log in again." });
+}
+// console.log("Token middleware",token)
+//   console.log(blacklist)
   // Verify the token using the JWT secret
   try {
     if (!jwt_secret)

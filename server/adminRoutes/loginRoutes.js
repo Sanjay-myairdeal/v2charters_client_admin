@@ -9,5 +9,5 @@ router.get("/getallusers", loginController.getAllUsers);
 router.put("/updateuserbyid/:id", loginController.editUser);
 router.get("/getuserbyid/:id", loginController.getUserById);
 router.put("/toggleBlockUser/:id", loginController.toggleBlockUser);
-
+router.post('/logout',loginController.logoutController)
 module.exports = router;
