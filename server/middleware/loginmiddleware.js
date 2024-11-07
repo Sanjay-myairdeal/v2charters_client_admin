@@ -33,11 +33,15 @@ if (blacklist.has(token)) {
     req.userId = decoded.userId;
 
      // Check if user is blocked
-     const user = await admin.findById(req.userId).select("isBlocked");
+     const user = await admin.findById(req.userId).select("isBlocked isRemoved");
      if (!user) return res.status(404).json({ message: "User not found" });
- 
+     
      if (user.isBlocked) {
        return res.status(403).json({ message: "User is blocked. Access denied." });
+     }
+
+     if(user.isRemoved){
+      return res.status(403).json({ message: "User is deleted. Access denied." });
      }
     // Proceed to the next middleware/route handler
     next();
