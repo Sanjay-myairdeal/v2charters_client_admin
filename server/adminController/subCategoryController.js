@@ -82,7 +82,7 @@ exports.getSubCategories = async (req, res) => {
       // Create flight details object
 
    // Check if the section already exists with the same 'active' status
-   const exist = await Subcategory.findOne({ section, chartertype, categoryName ,subCategoryName, isDeleted:false , from , to , date });
+   const exist = await Subcategory.findOne({ section, chartertype, categoryName ,subCategoryName, isDeleted:false , from , to , date , pax });
    if (exist) {
      return res.status(400).json({ message: "Sub-Category already exists" });
    }

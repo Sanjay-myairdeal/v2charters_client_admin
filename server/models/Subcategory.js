@@ -191,7 +191,7 @@ const SubcategorySchema = mongoose.Schema({
     type:String
   },
   pax:{
-    type:String
+    type:Number
   },
   availability:{
     type:String
@@ -200,10 +200,10 @@ const SubcategorySchema = mongoose.Schema({
     type:String
   },
   price:{
-    type:String
+    type:Number
   },
   airhosts:{
-    type:String
+    type:Number
   },
   fromtime:{
     type:String
@@ -212,10 +212,10 @@ const SubcategorySchema = mongoose.Schema({
     type:String
   },
   discount:{
-    type:String
+    type:Number
   },
   discountprice:{
-    type:String
+    type:Number
   },
   duration:{
     type:String
@@ -224,7 +224,7 @@ const SubcategorySchema = mongoose.Schema({
     type:String
   },
   targetprice:{
-    type:String
+    type:Number
   },
   brokercompany:{
     type:String
@@ -245,7 +245,7 @@ const SubcategorySchema = mongoose.Schema({
     type:String
   },
   operatorphone:{
-    type:String
+    type:Number
   },
   addedBy:{
     type: mongoose.Schema.Types.ObjectId,  // Reference to the UserRole object
