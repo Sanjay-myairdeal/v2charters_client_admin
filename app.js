@@ -5,7 +5,8 @@ const port = 8000;
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const cors = require('cors');
-
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger-output.json'); // Swagger documentation
 dotenv.config();
 
 // Static Files
@@ -14,6 +15,8 @@ app.use(express.static('public'));
 // Middleware
 app.use(express.json());
 app.use(cors());
+// Allow access from all origins
+app.use(cors({ origin: '*' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Components
@@ -55,6 +58,8 @@ app.use('/api/v2/admin/userroles',userRole);
 app.use('/api/v2/admin/view',viewRoutes);
 app.use('/api/v2/admin/adminlogs',adminLogsRoutes)
 
+// Swagger Documentation
+app.use('/api/v2/admin/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Database Connection
 dbConnect();
